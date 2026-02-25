@@ -19,9 +19,12 @@ function timeAgo(dateStr: string): string {
 }
 
 export function ProjectCard({ project }: { project: ProjectSummary }) {
+  const doneCount = project.totalCount - project.pendingCount;
+  const pct = project.totalCount > 0 ? Math.round((doneCount / project.totalCount) * 100) : 0;
+
   return (
     <Link href={`/project/${project.name}`}>
-      <div className="bg-card-bg border border-card-border rounded-xl p-5 hover:bg-card-hover hover:border-accent/30 transition-all group cursor-pointer">
+      <div className="bg-card-bg border border-card-border rounded-xl p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group cursor-pointer">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-accent group-hover:text-accent-hover transition-colors" />
@@ -42,6 +45,24 @@ export function ProjectCard({ project }: { project: ProjectSummary }) {
           </span>
           <span>{project.totalCount} total</span>
         </div>
+        {/* Progress bar */}
+        {project.totalCount > 0 && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-muted mb-1">
+              <span>{pct}% complete</span>
+              <span>{doneCount}/{project.totalCount}</span>
+            </div>
+            <div className="h-1.5 bg-card-border rounded-full overflow-hidden">
+              <div
+                className={clsx(
+                  "progress-fill h-full rounded-full",
+                  pct === 100 ? "bg-success" : "bg-accent"
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        )}
         {project.hasTasks && (
           <div className="flex items-center gap-1 mt-3 text-xs text-muted">
             <Clock className="w-3 h-3" />
