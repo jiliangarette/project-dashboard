@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  ChevronDown,
   Plus,
   RefreshCw,
   RotateCcw,
@@ -201,7 +202,14 @@ export default function ProjectPage({
   });
 
   const pendingCount = tasks.filter((t) => t.status !== "done").length;
+  const doneCount = tasks.filter((t) => t.status === "done").length;
   const showReorder = sortBy === "order";
+  const [completedOpen, setCompletedOpen] = useState(true);
+
+  // Split into sections (only when not filtering by status)
+  const showSections = filterStatus === "all";
+  const todoTasks = showSections ? sorted.filter((t) => t.status !== "done") : sorted;
+  const doneTasks = showSections ? sorted.filter((t) => t.status === "done") : [];
 
   return (
     <div>
@@ -280,7 +288,7 @@ export default function ProjectPage({
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="bg-card-bg border border-card-border rounded-lg p-4 h-20 animate-pulse"
+              className="skeleton border border-card-border rounded-lg p-4 h-20"
             />
           ))}
         </div>
@@ -294,23 +302,96 @@ export default function ProjectPage({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {sorted.map((task, idx) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={handleStatusChange}
-              onEdit={(t) => {
-                setEditingTask(t);
-                setShowForm(true);
-              }}
-              onDelete={handleDelete}
-              onMoveUp={showReorder ? (id) => handleReorder(id, "up") : undefined}
-              onMoveDown={showReorder ? (id) => handleReorder(id, "down") : undefined}
-              isFirst={idx === 0}
-              isLast={idx === sorted.length - 1}
-            />
-          ))}
+        <div className="space-y-6">
+          {/* To Do section */}
+          {showSections && (
+            <section>
+              <h2 className="text-sm font-semibold text-muted-fg uppercase tracking-wider mb-3">
+                To Do ({todoTasks.length})
+              </h2>
+              {todoTasks.length === 0 ? (
+                <p className="text-sm text-muted py-4 text-center">All tasks completed!</p>
+              ) : (
+                <div className="space-y-2">
+                  {todoTasks.map((task, idx) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onStatusChange={handleStatusChange}
+                      onEdit={(t) => {
+                        setEditingTask(t);
+                        setShowForm(true);
+                      }}
+                      onDelete={handleDelete}
+                      onMoveUp={showReorder ? (id) => handleReorder(id, "up") : undefined}
+                      onMoveDown={showReorder ? (id) => handleReorder(id, "down") : undefined}
+                      isFirst={idx === 0}
+                      isLast={idx === todoTasks.length - 1}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Completed section (collapsible) */}
+          {showSections && doneTasks.length > 0 && (
+            <section>
+              <button
+                onClick={() => setCompletedOpen((o) => !o)}
+                className="flex items-center gap-2 text-sm font-semibold text-muted-fg uppercase tracking-wider mb-3 hover:text-foreground transition-colors"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    completedOpen ? "" : "-rotate-90"
+                  }`}
+                />
+                Completed ({doneTasks.length})
+              </button>
+              {completedOpen && (
+                <div className="space-y-2">
+                  {doneTasks.map((task, idx) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onStatusChange={handleStatusChange}
+                      onEdit={(t) => {
+                        setEditingTask(t);
+                        setShowForm(true);
+                      }}
+                      onDelete={handleDelete}
+                      onMoveUp={showReorder ? (id) => handleReorder(id, "up") : undefined}
+                      onMoveDown={showReorder ? (id) => handleReorder(id, "down") : undefined}
+                      isFirst={idx === 0}
+                      isLast={idx === doneTasks.length - 1}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Flat list when filtering by specific status */}
+          {!showSections && (
+            <div className="space-y-2">
+              {sorted.map((task, idx) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onStatusChange={handleStatusChange}
+                  onEdit={(t) => {
+                    setEditingTask(t);
+                    setShowForm(true);
+                  }}
+                  onDelete={handleDelete}
+                  onMoveUp={showReorder ? (id) => handleReorder(id, "up") : undefined}
+                  onMoveDown={showReorder ? (id) => handleReorder(id, "down") : undefined}
+                  isFirst={idx === 0}
+                  isLast={idx === sorted.length - 1}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
