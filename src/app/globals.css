@@ -83,3 +83,56 @@ body {
   background: none;
   padding: 0;
 }
+
+/* Checkbox animations */
+.checkbox-check {
+  animation: checkPop 0.2s ease-out;
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.task-checkbox {
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.task-checkbox:hover:not(:disabled) {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Sync confirmation fade */
+.sync-confirm {
+  animation: fadeInOut 1.2s ease-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: scale(0.5); }
+  20% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Task card hover */
+.task-card {
+  transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+/* Progress bar animation */
+.progress-fill {
+  transition: width 0.5s ease-out;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-hover) 50%, var(--card-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

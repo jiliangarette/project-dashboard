@@ -1,8 +1,9 @@
 "use client";
 
 import { Pencil, Trash2, FileCode, ChevronUp, ChevronDown } from "lucide-react";
-import { StatusBadge } from "./StatusBadge";
+import { TaskCheckbox } from "./TaskCheckbox";
 import { PriorityBadge } from "./PriorityBadge";
+import { clsx } from "clsx";
 import type { Task } from "@/lib/types";
 
 const nextStatus: Record<Task["status"], Task["status"]> = {
@@ -21,7 +22,7 @@ export function TaskCard({
   isLast,
 }: {
   task: Task;
-  onStatusChange: (id: string, status: Task["status"]) => void;
+  onStatusChange: (id: string, status: Task["status"]) => Promise<void> | void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
   onMoveUp?: (id: string) => void;
@@ -29,9 +30,17 @@ export function TaskCard({
   isFirst?: boolean;
   isLast?: boolean;
 }) {
+  const isDone = task.status === "done";
+
   return (
-    <div className="bg-card-bg border border-card-border rounded-lg p-4 hover:border-card-hover transition-colors">
-      <div className="flex items-start justify-between gap-3">
+    <div
+      className={clsx(
+        "task-card bg-card-bg border border-card-border rounded-lg p-4 transition-all duration-200",
+        "hover:border-accent/30 hover:shadow-[0_0_12px_rgba(59,130,246,0.06)]",
+        isDone && "opacity-60"
+      )}
+    >
+      <div className="flex items-start gap-3">
         {/* Reorder arrows */}
         {onMoveUp && onMoveDown && (
           <div className="flex flex-col gap-0.5 shrink-0 -my-1">
@@ -54,12 +63,16 @@ export function TaskCard({
           </div>
         )}
 
+        {/* Checkbox */}
+        <div className="pt-0.5">
+          <TaskCheckbox
+            checked={isDone}
+            onToggle={() => onStatusChange(task.id, nextStatus[task.status])}
+          />
+        </div>
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <StatusBadge
-              status={task.status}
-              onClick={() => onStatusChange(task.id, nextStatus[task.status])}
-            />
             <PriorityBadge priority={task.priority} />
             {task.source === "tasks.md" && (
               <span className="text-xs text-muted flex items-center gap-0.5">
@@ -68,13 +81,28 @@ export function TaskCard({
               </span>
             )}
           </div>
-          <h4 className="font-medium text-foreground truncate">{task.title}</h4>
+          <h4
+            className={clsx(
+              "font-medium truncate transition-colors duration-200",
+              isDone
+                ? "line-through text-muted-fg"
+                : "text-foreground"
+            )}
+          >
+            {task.title}
+          </h4>
           {task.description && (
-            <p className="text-sm text-muted-fg mt-1 line-clamp-2">
+            <p
+              className={clsx(
+                "text-sm mt-1 line-clamp-2 transition-colors duration-200",
+                isDone ? "text-muted" : "text-muted-fg"
+              )}
+            >
               {task.description}
             </p>
           )}
         </div>
+
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => onEdit(task)}
