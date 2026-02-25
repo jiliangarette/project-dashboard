@@ -6,8 +6,7 @@ import { PriorityBadge } from "./PriorityBadge";
 import type { Task } from "@/lib/types";
 
 const nextStatus: Record<Task["status"], Task["status"]> = {
-  todo: "in-progress",
-  "in-progress": "done",
+  todo: "done",
   done: "todo",
 };
 

@@ -88,7 +88,6 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
                 className={selectCls}
               >
                 <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
                 <option value="done">Done</option>
               </select>
             </div>

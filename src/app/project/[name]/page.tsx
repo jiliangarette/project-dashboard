@@ -20,7 +20,7 @@ import { DocsViewer } from "@/components/DocsViewer";
 import type { Task, ProjectData } from "@/lib/types";
 
 const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-const statusOrder: Record<string, number> = { "in-progress": 0, todo: 1, done: 2 };
+const statusOrder: Record<string, number> = { todo: 0, done: 1 };
 
 export default function ProjectPage({
   params,

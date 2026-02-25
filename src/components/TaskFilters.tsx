@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 
 export type SortField = "priority" | "status" | "date" | "source" | "order";
 export type FilterSource = "all" | "manual" | "tasks.md";
-export type FilterStatus = "all" | "todo" | "in-progress" | "done";
+export type FilterStatus = "all" | "todo" | "done";
 
 interface TaskFiltersProps {
   sortBy: SortField;
@@ -66,7 +66,6 @@ export function TaskFilters({
         options={[
           { value: "all" as const, label: "All" },
           { value: "todo" as const, label: "To Do" },
-          { value: "in-progress" as const, label: "In Progress" },
           { value: "done" as const, label: "Done" },
         ]}
         value={filterStatus}

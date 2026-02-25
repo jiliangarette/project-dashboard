@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { RefreshCw } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
 import type { ProjectSummary } from "@/lib/types";
@@ -8,6 +8,7 @@ import type { ProjectSummary } from "@/lib/types";
 export default function Home() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasSynced = useRef(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -22,9 +23,32 @@ export default function Home() {
     }
   }, []);
 
+  // On first load: sync all projects, then fetch updated summaries
   useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+    if (hasSynced.current) return;
+    hasSynced.current = true;
+
+    async function syncAndFetch() {
+      setLoading(true);
+      try {
+        await fetch("/api/sync-all", { method: "POST" });
+      } catch (err) {
+        console.error("Auto-sync failed:", err);
+      }
+      // Always fetch projects after sync attempt
+      try {
+        const res = await fetch("/api/projects");
+        const data = await res.json();
+        setProjects(data);
+      } catch (err) {
+        console.error("Failed to fetch projects:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    syncAndFetch();
+  }, []);
 
   return (
     <div>
