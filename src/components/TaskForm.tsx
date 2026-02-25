@@ -15,7 +15,6 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Task["status"]>("todo");
   const [priority, setPriority] = useState<Task["priority"]>("medium");
-  const [assignee, setAssignee] = useState<Task["assignee"]>("jilian");
 
   useEffect(() => {
     if (task) {
@@ -23,7 +22,6 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
       setDescription(task.description || "");
       setStatus(task.status);
       setPriority(task.priority);
-      setAssignee(task.assignee);
     }
   }, [task]);
 
@@ -36,7 +34,6 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
       description: description.trim() || undefined,
       status,
       priority,
-      assignee,
     });
   }
 
@@ -82,7 +79,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
               placeholder="Optional description..."
             />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm text-muted-fg mb-1">Status</label>
               <select
@@ -109,22 +106,6 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-muted-fg mb-1">
-                Assignee
-              </label>
-              <select
-                value={assignee}
-                onChange={(e) =>
-                  setAssignee(e.target.value as Task["assignee"])
-                }
-                className={selectCls}
-              >
-                <option value="jilian">Jilian</option>
-                <option value="openclaw">OpenClaw</option>
-                <option value="lovable">Lovable</option>
               </select>
             </div>
           </div>

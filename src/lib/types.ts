@@ -4,7 +4,7 @@ export interface Task {
   description?: string;
   status: "todo" | "in-progress" | "done";
   priority: "low" | "medium" | "high";
-  assignee: "jilian" | "openclaw" | "lovable";
+  order?: number;
   source: "manual" | "tasks.md";
   sourceRef?: string;
   createdAt: string;

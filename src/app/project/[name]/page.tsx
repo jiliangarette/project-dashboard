@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback, useRef, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,7 +13,6 @@ import { TaskForm } from "@/components/TaskForm";
 import {
   TaskFilters,
   type SortField,
-  type FilterAssignee,
   type FilterSource,
   type FilterStatus,
 } from "@/components/TaskFilters";
@@ -34,12 +33,42 @@ export default function ProjectPage({
   const [syncing, setSyncing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const hasSynced = useRef(false);
 
   // Filters
-  const [sortBy, setSortBy] = useState<SortField>("priority");
-  const [filterAssignee, setFilterAssignee] = useState<FilterAssignee>("all");
+  const [sortBy, setSortBy] = useState<SortField>("order");
   const [filterSource, setFilterSource] = useState<FilterSource>("all");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
+
+  // Auto-sync on first load: sync TASKS.md then fetch tasks
+  useEffect(() => {
+    if (hasSynced.current) return;
+    hasSynced.current = true;
+
+    async function autoSync() {
+      setLoading(true);
+      setSyncing(true);
+      try {
+        const res = await fetch(`/api/projects/${name}/sync`, { method: "POST" });
+        const d = await res.json();
+        setData(d);
+      } catch (err) {
+        console.error("Auto-sync failed, falling back to fetch:", err);
+        try {
+          const res = await fetch(`/api/projects/${name}/tasks`);
+          const d = await res.json();
+          setData(d);
+        } catch (fetchErr) {
+          console.error("Failed to fetch tasks:", fetchErr);
+        }
+      } finally {
+        setSyncing(false);
+        setLoading(false);
+      }
+    }
+
+    autoSync();
+  }, [name]);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
@@ -53,10 +82,6 @@ export default function ProjectPage({
       setLoading(false);
     }
   }, [name]);
-
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
 
   async function syncTasks() {
     setSyncing(true);
@@ -92,7 +117,6 @@ export default function ProjectPage({
 
   async function handleSubmit(formData: Partial<Task>) {
     if (formData.id) {
-      // Edit
       const res = await fetch(`/api/projects/${name}/tasks`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -112,7 +136,6 @@ export default function ProjectPage({
         );
       }
     } else {
-      // Create
       const res = await fetch(`/api/projects/${name}/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,15 +165,28 @@ export default function ProjectPage({
     }
   }
 
+  async function handleReorder(id: string, direction: "up" | "down") {
+    const res = await fetch(`/api/projects/${name}/reorder`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, direction }),
+    });
+    if (res.ok) {
+      const d = await res.json();
+      setData(d);
+    }
+  }
+
   // Filter & sort
   const tasks = data?.tasks || [];
   const filtered = tasks
     .filter((t) => filterStatus === "all" || t.status === filterStatus)
-    .filter((t) => filterAssignee === "all" || t.assignee === filterAssignee)
     .filter((t) => filterSource === "all" || t.source === filterSource);
 
   const sorted = [...filtered].sort((a, b) => {
     switch (sortBy) {
+      case "order":
+        return (a.order ?? 9999) - (b.order ?? 9999);
       case "priority":
         return (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
       case "status":
@@ -165,6 +201,7 @@ export default function ProjectPage({
   });
 
   const pendingCount = tasks.filter((t) => t.status !== "done").length;
+  const showReorder = sortBy === "order";
 
   return (
     <div>
@@ -222,14 +259,20 @@ export default function ProjectPage({
         <TaskFilters
           sortBy={sortBy}
           onSortChange={setSortBy}
-          filterAssignee={filterAssignee}
-          onAssigneeChange={setFilterAssignee}
           filterSource={filterSource}
           onSourceChange={setFilterSource}
           filterStatus={filterStatus}
           onStatusChange={setFilterStatus}
         />
       </div>
+
+      {/* Syncing indicator */}
+      {syncing && data && (
+        <div className="mb-3 text-sm text-accent flex items-center gap-2">
+          <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+          Syncing TASKS.md...
+        </div>
+      )}
 
       {/* Task List */}
       {loading && !data ? (
@@ -252,7 +295,7 @@ export default function ProjectPage({
         </div>
       ) : (
         <div className="space-y-3">
-          {sorted.map((task) => (
+          {sorted.map((task, idx) => (
             <TaskCard
               key={task.id}
               task={task}
@@ -262,6 +305,10 @@ export default function ProjectPage({
                 setShowForm(true);
               }}
               onDelete={handleDelete}
+              onMoveUp={showReorder ? (id) => handleReorder(id, "up") : undefined}
+              onMoveDown={showReorder ? (id) => handleReorder(id, "down") : undefined}
+              isFirst={idx === 0}
+              isLast={idx === sorted.length - 1}
             />
           ))}
         </div>

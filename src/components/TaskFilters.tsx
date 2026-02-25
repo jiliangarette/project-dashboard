@@ -2,16 +2,13 @@
 
 import { clsx } from "clsx";
 
-export type SortField = "priority" | "status" | "date" | "source";
-export type FilterAssignee = "all" | "jilian" | "openclaw" | "lovable";
+export type SortField = "priority" | "status" | "date" | "source" | "order";
 export type FilterSource = "all" | "manual" | "tasks.md";
 export type FilterStatus = "all" | "todo" | "in-progress" | "done";
 
 interface TaskFiltersProps {
   sortBy: SortField;
   onSortChange: (v: SortField) => void;
-  filterAssignee: FilterAssignee;
-  onAssigneeChange: (v: FilterAssignee) => void;
   filterSource: FilterSource;
   onSourceChange: (v: FilterSource) => void;
   filterStatus: FilterStatus;
@@ -57,8 +54,6 @@ function ChipGroup<T extends string>({
 export function TaskFilters({
   sortBy,
   onSortChange,
-  filterAssignee,
-  onAssigneeChange,
   filterSource,
   onSourceChange,
   filterStatus,
@@ -78,17 +73,6 @@ export function TaskFilters({
         onChange={onStatusChange}
       />
       <ChipGroup
-        label="Assignee"
-        options={[
-          { value: "all" as const, label: "All" },
-          { value: "jilian" as const, label: "Jilian" },
-          { value: "openclaw" as const, label: "OpenClaw" },
-          { value: "lovable" as const, label: "Lovable" },
-        ]}
-        value={filterAssignee}
-        onChange={onAssigneeChange}
-      />
-      <ChipGroup
         label="Source"
         options={[
           { value: "all" as const, label: "All" },
@@ -101,6 +85,7 @@ export function TaskFilters({
       <ChipGroup
         label="Sort"
         options={[
+          { value: "order" as const, label: "Order" },
           { value: "priority" as const, label: "Priority" },
           { value: "status" as const, label: "Status" },
           { value: "date" as const, label: "Date" },

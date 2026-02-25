@@ -33,19 +33,26 @@ export async function POST(
   const body = await request.json();
   const now = new Date().toISOString();
 
+  const data = await readTasksJson(project);
+
+  // Assign order: append at the bottom (highest order + 1)
+  let maxOrder = 0;
+  for (const t of data.tasks) {
+    if (t.order !== undefined && t.order > maxOrder) maxOrder = t.order;
+  }
+
   const newTask: Task = {
     id: uuidv4(),
     title: body.title,
     description: body.description || undefined,
     status: body.status || "todo",
     priority: body.priority || "medium",
-    assignee: body.assignee || "jilian",
+    order: maxOrder + 1,
     source: "manual",
     createdAt: now,
     updatedAt: now,
   };
 
-  const data = await readTasksJson(project);
   data.tasks.push(newTask);
   data.lastSynced = now;
   await writeTasksJson(project, data);
