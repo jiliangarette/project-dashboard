@@ -16,7 +16,11 @@ export async function readTasksJson(project: string): Promise<ProjectData> {
   const p = tasksJsonPath(project);
   if (await fileExists(p)) {
     const raw = await fs.readFile(p, "utf-8");
-    return JSON.parse(raw) as ProjectData;
+    try {
+      return JSON.parse(raw) as ProjectData;
+    } catch {
+      // Corrupted JSON — return empty
+    }
   }
   return {
     projectName: project,
