@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ToastContainer } from "@/components/Toast";
 
@@ -32,9 +33,11 @@ export default function RootLayout({
       >
         <SessionProvider>
           <Header />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            {children}
-          </main>
+          <ErrorBoundary>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              {children}
+            </main>
+          </ErrorBoundary>
           <ToastContainer />
         </SessionProvider>
       </body>
