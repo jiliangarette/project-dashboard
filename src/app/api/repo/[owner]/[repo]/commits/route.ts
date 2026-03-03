@@ -22,7 +22,11 @@ export async function GET(
 
     const commits = await fetchRepoCommits(owner, repo, session.accessToken, since);
 
-    return NextResponse.json({ commits });
+    return NextResponse.json({ commits }, {
+      headers: {
+        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+      },
+    });
   } catch (error) {
     console.error("Error fetching commits:", error);
     return NextResponse.json(

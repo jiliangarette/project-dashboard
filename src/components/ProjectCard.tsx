@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { Star, GitFork, AlertCircle, Pin } from "lucide-react";
 import { clsx } from "clsx";
@@ -49,11 +50,11 @@ interface ProjectCardProps {
   onTogglePin: (repoId: number) => void;
 }
 
-export function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
+export const ProjectCard = memo(function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
   const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
 
   return (
-    <div className="relative bg-card-bg border border-card-border rounded-xl p-4 sm:p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group">
+    <div className="relative bg-card-bg border border-card-border rounded-xl p-4 sm:p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group card-fade-in">
       {/* Pin button */}
       <button
         onClick={(e) => {
@@ -68,11 +69,12 @@ export function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
             : "text-muted-fg hover:text-accent hover:bg-accent/5"
         )}
         title={isPinned ? "Unpin" : "Pin to top"}
+        aria-label={isPinned ? `Unpin ${repo.name}` : `Pin ${repo.name} to top`}
       >
         <Pin className={clsx("w-4 h-4", isPinned && "fill-accent")} />
       </button>
 
-      <Link href={`/project/${repo.owner.login}/${repo.name}`}>
+      <Link href={`/project/${repo.owner.login}/${repo.name}`} prefetch={false}>
         <div>
           {/* Repo name */}
           <h3 className="font-semibold text-foreground mb-2 pr-8">{repo.name}</h3>
@@ -119,4 +121,4 @@ export function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
       </Link>
     </div>
   );
-}
+});

@@ -16,7 +16,11 @@ export async function GET(
     const { owner, repo } = await params;
     const repoData = await fetchRepoInfo(owner, repo, session.accessToken);
 
-    return NextResponse.json({ repo: repoData });
+    return NextResponse.json({ repo: repoData }, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    });
   } catch (error) {
     console.error("Error fetching repo:", error);
 

@@ -63,6 +63,7 @@ function ToastItem({ toast: t, onDismiss }: { toast: ToastMessage; onDismiss: (i
           setTimeout(() => onDismiss(t.id), 200);
         }}
         className="p-1 rounded hover:bg-white/10 transition-colors flex-shrink-0 min-w-[28px] min-h-[28px] flex items-center justify-center"
+        aria-label="Dismiss notification"
       >
         <X className="w-4 h-4" />
       </button>
@@ -92,7 +93,11 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 sm:bottom-6 sm:right-6">
+    <div
+      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 sm:bottom-6 sm:right-6"
+      aria-live="polite"
+      role="status"
+    >
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} onDismiss={dismiss} />
       ))}

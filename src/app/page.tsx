@@ -309,6 +309,7 @@ export default function DashboardPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground placeholder:text-muted-fg focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
+            aria-label="Search repositories"
           />
         </div>
 
@@ -317,6 +318,7 @@ export default function DashboardPage() {
             value={languageFilter}
             onChange={(e) => setLanguageFilter(e.target.value)}
             className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px] text-sm"
+            aria-label="Filter by language"
           >
             <option value="">All Languages</option>
             {languages.map((lang) => (
@@ -330,6 +332,7 @@ export default function DashboardPage() {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
             className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px] text-sm"
+            aria-label="Sort repositories"
           >
             <option value="updated">Recent</option>
             <option value="stars">Stars</option>

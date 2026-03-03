@@ -30,12 +30,17 @@ export function Header() {
               "px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center",
               isHome ? "text-foreground bg-foreground/5" : "text-muted-fg hover:text-foreground"
             )}
+            {...(isHome ? { "aria-current": "page" as const } : {})}
           >
             Projects
           </Link>
           <Link
             href="/settings"
-            className="px-3 py-2 rounded-lg transition-colors hover:text-foreground text-muted-fg min-h-[44px] flex items-center"
+            className={clsx(
+              "px-3 py-2 rounded-lg transition-colors hover:text-foreground text-muted-fg min-h-[44px] flex items-center",
+              pathname === "/settings" && "text-foreground bg-foreground/5"
+            )}
+            {...(pathname === "/settings" ? { "aria-current": "page" as const } : {})}
           >
             Settings
           </Link>
@@ -47,6 +52,7 @@ export function Header() {
                     src={session.user.image}
                     alt={session.user.name || "User"}
                     className="w-7 h-7 rounded-full"
+                    loading="lazy"
                   />
                 )}
                 <span className="text-sm text-foreground hidden md:block">
@@ -57,6 +63,7 @@ export function Header() {
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="p-2 rounded-lg text-muted-fg hover:text-foreground hover:bg-foreground/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 title="Sign out"
+                aria-label="Sign out"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -84,13 +91,18 @@ export function Header() {
               "block px-3 py-3 rounded-lg transition-colors min-h-[44px]",
               isHome ? "text-foreground bg-foreground/5" : "text-muted-fg hover:text-foreground"
             )}
+            {...(isHome ? { "aria-current": "page" as const } : {})}
           >
             Projects
           </Link>
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}
-            className="block px-3 py-3 rounded-lg transition-colors hover:text-foreground text-muted-fg min-h-[44px]"
+            className={clsx(
+              "block px-3 py-3 rounded-lg transition-colors hover:text-foreground text-muted-fg min-h-[44px]",
+              pathname === "/settings" && "text-foreground bg-foreground/5"
+            )}
+            {...(pathname === "/settings" ? { "aria-current": "page" as const } : {})}
           >
             Settings
           </Link>
@@ -103,6 +115,7 @@ export function Header() {
                       src={session.user.image}
                       alt={session.user.name || "User"}
                       className="w-7 h-7 rounded-full"
+                    loading="lazy"
                     />
                   )}
                   <span className="text-sm text-foreground">{session.user.name}</span>

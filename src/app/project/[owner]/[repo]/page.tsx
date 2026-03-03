@@ -150,6 +150,7 @@ export default function ProjectDetailPage() {
       <button
         onClick={() => router.push("/")}
         className="flex items-center gap-2 text-muted-fg hover:text-foreground transition-colors py-2 min-h-[44px]"
+        aria-label="Back to Dashboard"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Dashboard
@@ -207,9 +208,12 @@ export default function ProjectDetailPage() {
 
       {/* Tabs */}
       <div className="border-b border-card-border">
-        <div className="flex gap-2 sm:gap-6">
+        <div className="flex gap-2 sm:gap-6" role="tablist" aria-label="Project views">
           <button
             onClick={() => setActiveTab("changelog")}
+            role="tab"
+            aria-selected={activeTab === "changelog"}
+            aria-controls="tabpanel-changelog"
             className={clsx(
               "pb-3 px-2 sm:px-1 border-b-2 transition-colors font-medium min-h-[44px] text-sm sm:text-base",
               activeTab === "changelog"
@@ -221,6 +225,9 @@ export default function ProjectDetailPage() {
           </button>
           <button
             onClick={() => setActiveTab("tasks")}
+            role="tab"
+            aria-selected={activeTab === "tasks"}
+            aria-controls="tabpanel-tasks"
             className={clsx(
               "pb-3 px-2 sm:px-1 border-b-2 transition-colors font-medium min-h-[44px] text-sm sm:text-base",
               activeTab === "tasks"
@@ -235,8 +242,8 @@ export default function ProjectDetailPage() {
 
       {/* Tab content */}
       <div className="min-h-[400px]">
-        {activeTab === "changelog" && <ChangelogTab owner={owner} repo={repo} />}
-        {activeTab === "tasks" && <TasksTab owner={owner} repo={repo} />}
+        {activeTab === "changelog" && <div id="tabpanel-changelog" role="tabpanel"><ChangelogTab owner={owner} repo={repo} /></div>}
+        {activeTab === "tasks" && <div id="tabpanel-tasks" role="tabpanel"><TasksTab owner={owner} repo={repo} /></div>}
       </div>
     </div>
   );
