@@ -102,13 +102,26 @@ export async function fetchRepoInfo(
   return response.json();
 }
 
+export interface GitHubCommit {
+  sha: string;
+  commit: {
+    message: string;
+    author: {
+      date: string;
+      name?: string;
+      email?: string;
+    };
+  };
+  [key: string]: unknown;
+}
+
 export async function fetchRepoCommits(
   owner: string,
   repo: string,
   accessToken: string,
   since?: string
-): Promise<any[]> {
-  const commits: any[] = [];
+): Promise<GitHubCommit[]> {
+  const commits: GitHubCommit[] = [];
   let page = 1;
   let hasMore = true;
 

@@ -34,7 +34,7 @@ Sentry.init({
   
   enabled: process.env.NODE_ENV === 'production' && !!process.env.NEXT_PUBLIC_SENTRY_DSN,
   
-  beforeSend(event, hint) {
+  beforeSend(event) {
     // Filter out events from localhost in development
     if (event.request?.url?.includes('localhost')) {
       return null;

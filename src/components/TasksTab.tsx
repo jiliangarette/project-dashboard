@@ -224,7 +224,7 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
             <label className="text-sm text-muted-fg">Priority:</label>
             <select
               value={formPriority}
-              onChange={(e) => setFormPriority(e.target.value as any)}
+              onChange={(e) => setFormPriority(e.target.value as Task["priority"])}
               className="px-3 py-1 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="low">Low</option>

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
-import { Search, Filter, Star, WifiOff, Clock } from "lucide-react";
+import { Search, Star, WifiOff, Clock } from "lucide-react";
 import { clsx } from "clsx";
 import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
@@ -275,7 +275,7 @@ export default function DashboardPage() {
       {isOffline && (
         <div className="flex items-center gap-3 p-3 rounded-lg border border-warning/30 bg-warning/10">
           <WifiOff className="w-5 h-5 text-warning flex-shrink-0" />
-          <p className="text-warning text-sm">You're offline. Data may be stale.</p>
+          <p className="text-warning text-sm">You&apos;re offline. Data may be stale.</p>
         </div>
       )}
 

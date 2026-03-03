@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { clsx } from "clsx";
 
 interface LanguageChartProps {
   repos: { language: string | null }[];

@@ -1,4 +1,4 @@
-import { fetchUserRepos, fetchRepoDetails, fetchCommits } from '../github';
+import { fetchUserRepos, fetchCommits } from '../github';
 
 // Mock fetch globally
 global.fetch = jest.fn();

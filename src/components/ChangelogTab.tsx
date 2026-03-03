@@ -18,7 +18,7 @@ interface ChangelogTabProps {
 }
 
 export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
-  const [commits, setCommits] = useState<any[]>([]);
+  // Removed unused commits state - data comes from API
   const [dayGroups, setDayGroups] = useState<DayCommits[]>([]);
   const [changelogs, setChangelogs] = useState<Map<string, GeneratedChangelog>>(new Map());
   const [loading, setLoading] = useState(true);

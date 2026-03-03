@@ -8,7 +8,12 @@ import { toast } from "@/components/Toast";
 export const dynamic = 'force-dynamic';
 
 export default function DemoPage() {
-  const [repos, setRepos] = useState<any[]>([]);
+  const [repos, setRepos] = useState<{
+    id: number;
+    name: string;
+    description?: string;
+    [key: string]: unknown;
+  }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [username, setUsername] = useState("jiliangarette");
@@ -77,7 +82,7 @@ export default function DemoPage() {
           GitHub Repository Dashboard
         </h1>
         <p className="text-muted-fg text-sm sm:text-base">
-          Track any GitHub user's public repositories without authentication
+          Track any GitHub user&apos;s public repositories without authentication
         </p>
       </div>
 

@@ -199,7 +199,7 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
     let parsed;
     try {
       parsed = JSON.parse(content);
-    } catch (e) {
+    } catch {
       // If response isn't pure JSON, try to extract JSON from markdown code block
       const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
       if (jsonMatch) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -13,10 +14,12 @@ export function Header() {
   const isHome = pathname === "/";
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="border-b border-card-border bg-card-bg/80 backdrop-blur-sm sticky top-0 z-50">
@@ -65,11 +68,12 @@ export function Header() {
             <div className="flex items-center gap-3 border-l border-card-border pl-3 ml-2">
               <div className="flex items-center gap-2">
                 {session.user.image && (
-                  <img
+                  <Image
                     src={session.user.image}
                     alt={session.user.name || "User"}
+                    width={28}
+                    height={28}
                     className="w-7 h-7 rounded-full"
-                    loading="lazy"
                   />
                 )}
                 <span className="text-sm text-foreground hidden md:block">
@@ -139,11 +143,12 @@ export function Header() {
               <div className="flex items-center justify-between px-3 py-3">
                 <div className="flex items-center gap-2">
                   {session.user.image && (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt={session.user.name || "User"}
+                      width={28}
+                      height={28}
                       className="w-7 h-7 rounded-full"
-                    loading="lazy"
                     />
                   )}
                   <span className="text-sm text-foreground">{session.user.name}</span>

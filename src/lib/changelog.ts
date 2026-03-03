@@ -14,7 +14,7 @@ export interface GeneratedChangelog {
   bullets: string[];
 }
 
-export function groupCommitsByDay(commits: any[]): DayCommits[] {
+export function groupCommitsByDay(commits: { sha: string; commit: { message: string; author: { date: string } } }[]): DayCommits[] {
   const grouped = new Map<string, DayCommits>();
 
   commits.forEach((commit) => {
