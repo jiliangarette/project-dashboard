@@ -25,6 +25,12 @@ export default function LoginPage() {
           </svg>
           Sign in with GitHub
         </button>
+        <a
+          href="/demo"
+          className="mt-3 block text-center text-sm text-muted-fg hover:text-accent transition-colors"
+        >
+          or try demo mode (no login required)
+        </a>
       </div>
     </div>
   );
