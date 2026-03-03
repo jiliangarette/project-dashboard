@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { useTheme } from "next-themes";
+import { LayoutDashboard, LogOut, Menu, X, Sun, Moon } from "lucide-react";
 import { clsx } from "clsx";
 
 export function Header() {
@@ -12,6 +13,10 @@ export function Header() {
   const isHome = pathname === "/";
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   return (
     <header className="border-b border-card-border bg-card-bg/80 backdrop-blur-sm sticky top-0 z-50">
@@ -44,6 +49,18 @@ export function Header() {
           >
             Settings
           </Link>
+          <button
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            className="p-2 rounded-lg text-muted-fg hover:text-foreground hover:bg-foreground/5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            title={mounted ? `Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode` : "Toggle theme"}
+            aria-label="Toggle theme"
+          >
+            {mounted && resolvedTheme === "dark" ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+          </button>
           {session?.user && (
             <div className="flex items-center gap-3 border-l border-card-border pl-3 ml-2">
               <div className="flex items-center gap-2">
@@ -106,6 +123,17 @@ export function Header() {
           >
             Settings
           </Link>
+          <button
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-muted-fg hover:text-foreground transition-colors min-h-[44px]"
+          >
+            {mounted && resolvedTheme === "dark" ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+            <span className="text-sm">{mounted && resolvedTheme === "dark" ? "Light mode" : "Dark mode"}</span>
+          </button>
           {session?.user && (
             <div className="border-t border-card-border pt-2 mt-2">
               <div className="flex items-center justify-between px-3 py-3">

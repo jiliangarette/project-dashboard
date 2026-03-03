@@ -4,7 +4,9 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SessionProvider } from "@/components/SessionProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastContainer } from "@/components/Toast";
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,10 +29,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
+        <ThemeProvider>
         <SessionProvider>
           <a
             href="#main-content"
@@ -45,7 +48,9 @@ export default function RootLayout({
             </main>
           </ErrorBoundary>
           <ToastContainer />
+          <KeyboardShortcutsModal />
         </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
