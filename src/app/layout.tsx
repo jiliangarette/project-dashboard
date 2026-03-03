@@ -21,8 +21,54 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project Dashboard",
-  description: "Your projects, explained in plain English",
+  title: {
+    default: "Project Dashboard",
+    template: "%s | Project Dashboard",
+  },
+  description: "GitHub repository dashboard with AI-powered changelogs that explain your commits in plain English. Track your projects, view analytics, and stay organized.",
+  keywords: ["github", "dashboard", "ai", "changelog", "project management", "repository", "git", "developer tools"],
+  authors: [{ name: "Jilian Garette A. Abangan", url: "https://github.com/jiliangarette" }],
+  creator: "Jilian Garette A. Abangan",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://project-dashboard.vercel.app",
+    title: "Project Dashboard",
+    description: "GitHub repository dashboard with AI-powered changelogs that explain your commits in plain English.",
+    siteName: "Project Dashboard",
+    images: [
+      {
+        url: "https://project-dashboard.vercel.app/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Project Dashboard - AI-powered GitHub changelogs",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Project Dashboard",
+    description: "GitHub dashboard with AI-powered changelogs in plain English",
+    creator: "@jiliangarette",
+    images: ["https://project-dashboard.vercel.app/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
