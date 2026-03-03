@@ -69,6 +69,28 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
     setGenerating((prev) => new Set(prev).add(day.date));
 
     try {
+      // Get settings from localStorage
+      const storedSettings = localStorage.getItem("changelog-settings");
+      let provider = "openrouter";
+      let model = "meta-llama/llama-3.1-8b-instruct:free";
+
+      if (storedSettings) {
+        try {
+          const settings = JSON.parse(storedSettings);
+          provider = settings.aiProvider || "openrouter";
+          
+          if (provider === "openrouter") {
+            model = settings.openrouterModel || "meta-llama/llama-3.1-8b-instruct:free";
+          } else if (provider === "openai") {
+            model = settings.openaiModel || "gpt-4o-mini";
+          } else if (provider === "anthropic") {
+            model = settings.anthropicModel || "claude-sonnet-4-5";
+          }
+        } catch (e) {
+          console.error("Failed to parse settings:", e);
+        }
+      }
+
       const response = await fetch("/api/changelog/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,6 +100,8 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
             message: c.message,
             author: c.author,
           })),
+          provider,
+          model,
         }),
       });
 

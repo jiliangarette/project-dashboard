@@ -28,6 +28,12 @@ export function Header() {
           >
             Projects
           </Link>
+          <Link
+            href="/settings"
+            className="transition-colors hover:text-foreground text-muted-fg"
+          >
+            Settings
+          </Link>
           {session?.user && (
             <div className="flex items-center gap-3 border-l border-card-border pl-4">
               <div className="flex items-center gap-2">
