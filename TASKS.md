@@ -11,7 +11,7 @@
 ### Features
 - [x] **Search across all projects** — Global search bar to find repos by name/description ✅
 - [ ] **Bulk actions** — Select multiple repos and perform batch operations
-- [x] **Task notes/comments** — Add timestamped notes to individual tasks for progress tracking (UI complete, backend integration pending) ⚠️
+- [x] **Task notes/comments** — Add timestamped notes to individual tasks with full CRUD ✅
 - [x] **Keyboard shortcuts** — Quick navigation: /, Esc, 1/2/3 for tabs, ? for help ✅
 - [x] **Dashboard analytics** — Charts showing language distribution, commit activity, repo stats ✅
 - [ ] **Export/import** — Export repo data as CSV or JSON for reporting
@@ -19,7 +19,8 @@
 - [ ] **Project grouping/tags** — Group repos by topic/category
 
 ### UI/UX Improvements
-- [ ] **Mobile-optimized layout** — Improve touch targets and responsive behavior on phones
+- [x] **Mobile touch targets** — All buttons/checkboxes meet 44px minimum for touch accessibility ✅
+- [ ] **Mobile-optimized layout** — Improve responsive behavior on phones (forms, cards)
 - [x] **Dark/light theme toggle** — Add theme switcher ✅
 - [x] **Task due dates** — Optional due date field with overdue highlighting ✅
 - [ ] **Drag-and-drop reorder** — Drag-and-drop for repo pinning and task ordering

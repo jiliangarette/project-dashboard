@@ -4,6 +4,31 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.11.0] — 2026-03-04 — Mobile UX & Task Notes Integration
+
+### Added
+- **Task notes backend integration** — Full CRUD support for timestamped task notes with localStorage persistence
+- **Mobile touch targets** — All interactive elements now meet 44px minimum touch target size (Apple/Material Design guidelines)
+  - TaskCheckbox increased from 20px to 44px touch area
+  - Reorder arrows upgraded to 36px minimum
+  - Edit/delete buttons enlarged to 40px minimum
+  - Proper ARIA labels added for screen readers
+- **Due date field in task form** — Added date picker to task add/edit form with min date validation
+- **Improved accessibility** — Better keyboard navigation and screen reader support
+
+### Changed
+- TasksTab now uses imported TaskCard component instead of inline duplicate
+- Task interface updated to include notes, dueDate, and proper timestamps
+- All task operations now update `updatedAt` timestamp automatically
+- Better type safety with RepoTask interface for TASKS.md-parsed tasks
+
+### Fixed
+- Task notes now persist correctly to localStorage
+- Duplicate TaskCard component removed
+- Form state properly resets when canceling edit/add
+
+---
+
 ## [0.10.0] — 2026-03-04 — Production Error Monitoring
 
 ### Added
