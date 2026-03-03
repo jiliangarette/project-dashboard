@@ -1,16 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, FileText, User, Trash2, Edit2, Check, X } from "lucide-react";
-import { clsx } from "clsx";
+import { Plus, Check, X } from "lucide-react";
+import { TaskCard } from "./TaskCard";
+import type { Task, TaskNote } from "@/lib/types";
 
-interface Task {
+// Simplified interface for repo-parsed tasks (missing full Task fields)
+interface RepoTask {
   id: string;
   title: string;
   description?: string;
   status: "todo" | "done";
   priority: "low" | "medium" | "high";
-  source: "repo" | "manual";
+  source: "manual" | "tasks.md";
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface TasksTabProps {
@@ -18,9 +22,10 @@ interface TasksTabProps {
   repo: string;
 }
 
-function parseTasks(markdown: string): Task[] {
+function parseTasks(markdown: string): RepoTask[] {
   const lines = markdown.split("\n");
-  const tasks: Task[] = [];
+  const tasks: RepoTask[] = [];
+  const now = new Date().toISOString();
 
   for (const line of lines) {
     const uncheckedMatch = line.match(/^[-*]\s+\[\s\]\s+(.+)$/);
@@ -32,7 +37,9 @@ function parseTasks(markdown: string): Task[] {
         title: (uncheckedMatch || checkedMatch)![1].trim(),
         status: checkedMatch ? "done" : "todo",
         priority: "medium",
-        source: "repo",
+        source: "tasks.md",
+        createdAt: now,
+        updatedAt: now,
       });
     }
   }
@@ -41,7 +48,7 @@ function parseTasks(markdown: string): Task[] {
 }
 
 export function TasksTab({ owner, repo }: TasksTabProps) {
-  const [repoTasks, setRepoTasks] = useState<Task[]>([]);
+  const [repoTasks, setRepoTasks] = useState<RepoTask[]>([]);
   const [manualTasks, setManualTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -50,6 +57,7 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
   const [formTitle, setFormTitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formPriority, setFormPriority] = useState<"low" | "medium" | "high">("medium");
+  const [formDueDate, setFormDueDate] = useState("");
 
   // Load repo tasks
   useEffect(() => {
@@ -104,19 +112,25 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
   const handleAddTask = () => {
     if (!formTitle.trim()) return;
 
+    const now = new Date().toISOString();
     const newTask: Task = {
       id: `manual-${Date.now()}`,
       title: formTitle.trim(),
       description: formDescription.trim() || undefined,
       status: "todo",
       priority: formPriority,
+      dueDate: formDueDate || undefined,
+      notes: [],
       source: "manual",
+      createdAt: now,
+      updatedAt: now,
     };
 
     setManualTasks((prev) => [...prev, newTask]);
     setFormTitle("");
     setFormDescription("");
     setFormPriority("medium");
+    setFormDueDate("");
     setShowAddForm(false);
   };
 
@@ -131,6 +145,8 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
               title: formTitle.trim(),
               description: formDescription.trim() || undefined,
               priority: formPriority,
+              dueDate: formDueDate || undefined,
+              updatedAt: new Date().toISOString(),
             }
           : t
       )
@@ -140,6 +156,7 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
     setFormTitle("");
     setFormDescription("");
     setFormPriority("medium");
+    setFormDueDate("");
   };
 
   const handleDeleteTask = (id: string) => {
@@ -148,10 +165,42 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
     }
   };
 
-  const toggleTaskStatus = (id: string) => {
+  const toggleTaskStatus = async (id: string, newStatus: Task["status"]) => {
     setManualTasks((prev) =>
       prev.map((t) =>
-        t.id === id ? { ...t, status: t.status === "todo" ? "done" : "todo" } : t
+        t.id === id
+          ? { ...t, status: newStatus, updatedAt: new Date().toISOString() }
+          : t
+      )
+    );
+  };
+
+  const handleAddNote = (taskId: string, noteText: string) => {
+    const newNote: TaskNote = {
+      id: `note-${Date.now()}`,
+      text: noteText,
+      timestamp: new Date().toISOString(),
+    };
+
+    setManualTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, notes: [...(t.notes || []), newNote], updatedAt: new Date().toISOString() }
+          : t
+      )
+    );
+  };
+
+  const handleDeleteNote = (taskId: string, noteId: string) => {
+    setManualTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              notes: (t.notes || []).filter((n) => n.id !== noteId),
+              updatedAt: new Date().toISOString(),
+            }
+          : t
       )
     );
   };
@@ -161,6 +210,7 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
     setFormTitle(task.title);
     setFormDescription(task.description || "");
     setFormPriority(task.priority);
+    setFormDueDate(task.dueDate || "");
     setShowAddForm(false);
   };
 
@@ -170,6 +220,7 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
     setFormTitle("");
     setFormDescription("");
     setFormPriority("medium");
+    setFormDueDate("");
   };
 
   const allTasks = [...repoTasks, ...manualTasks];
@@ -220,17 +271,29 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
             rows={2}
             className="w-full px-3 py-2 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent resize-none"
           />
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-muted-fg">Priority:</label>
-            <select
-              value={formPriority}
-              onChange={(e) => setFormPriority(e.target.value as Task["priority"])}
-              className="px-3 py-1 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-muted-fg">Priority:</label>
+              <select
+                value={formPriority}
+                onChange={(e) => setFormPriority(e.target.value as Task["priority"])}
+                className="px-3 py-1 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-muted-fg">Due date:</label>
+              <input
+                type="date"
+                value={formDueDate}
+                onChange={(e) => setFormDueDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="px-3 py-1 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
           </div>
           <div className="flex gap-2">
             <button
@@ -268,13 +331,17 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
             To Do ({todoTasks.length})
           </h3>
           <div className="space-y-2">
-            {todoTasks.map((task) => (
+            {todoTasks.map((task, index) => (
               <TaskCard
                 key={task.id}
-                task={task}
-                onToggle={task.source === "manual" ? toggleTaskStatus : undefined}
+                task={task as Task}
+                onStatusChange={task.source === "manual" ? toggleTaskStatus : undefined}
                 onEdit={task.source === "manual" ? startEdit : undefined}
                 onDelete={task.source === "manual" ? handleDeleteTask : undefined}
+                onAddNote={task.source === "manual" ? handleAddNote : undefined}
+                onDeleteNote={task.source === "manual" ? handleDeleteNote : undefined}
+                isFirst={index === 0}
+                isLast={index === todoTasks.length - 1}
               />
             ))}
           </div>
@@ -288,124 +355,22 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
             Completed ({doneTasks.length})
           </h3>
           <div className="space-y-2">
-            {doneTasks.map((task) => (
+            {doneTasks.map((task, index) => (
               <TaskCard
                 key={task.id}
-                task={task}
-                onToggle={task.source === "manual" ? toggleTaskStatus : undefined}
+                task={task as Task}
+                onStatusChange={task.source === "manual" ? toggleTaskStatus : undefined}
                 onEdit={task.source === "manual" ? startEdit : undefined}
                 onDelete={task.source === "manual" ? handleDeleteTask : undefined}
+                onAddNote={task.source === "manual" ? handleAddNote : undefined}
+                onDeleteNote={task.source === "manual" ? handleDeleteNote : undefined}
+                isFirst={index === 0}
+                isLast={index === doneTasks.length - 1}
               />
             ))}
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-interface TaskCardProps {
-  task: Task;
-  onToggle?: (id: string) => void;
-  onEdit?: (task: Task) => void;
-  onDelete?: (id: string) => void;
-}
-
-function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
-  const priorityColors = {
-    low: "text-blue-400",
-    medium: "text-yellow-400",
-    high: "text-red-400",
-  };
-
-  return (
-    <div
-      className={clsx(
-        "bg-card-bg border border-card-border rounded-lg p-4 transition-opacity",
-        task.status === "done" && "opacity-60"
-      )}
-    >
-      <div className="flex items-start gap-3">
-        {/* Checkbox */}
-        <button
-          onClick={() => onToggle?.(task.id)}
-          disabled={!onToggle}
-          className={clsx(
-            "mt-0.5 w-6 h-6 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0",
-            "min-w-[24px] min-h-[24px]",
-            task.status === "done"
-              ? "bg-accent border-accent"
-              : "border-card-border hover:border-accent",
-            !onToggle && "cursor-default"
-          )}
-        >
-          {task.status === "done" && <Check className="w-3.5 h-3.5 text-white" />}
-        </button>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h4
-              className={clsx(
-                "text-foreground font-medium break-words",
-                task.status === "done" && "line-through"
-              )}
-            >
-              {task.title}
-            </h4>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {/* Source badge */}
-              <div
-                className={clsx(
-                  "flex items-center gap-1 px-2 py-0.5 rounded text-xs",
-                  task.source === "repo"
-                    ? "bg-blue-500/10 text-blue-400"
-                    : "bg-purple-500/10 text-purple-400"
-                )}
-              >
-                {task.source === "repo" ? (
-                  <>
-                    <FileText className="w-3 h-3" />
-                    <span>Repo</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="w-3 h-3" />
-                    <span>Manual</span>
-                  </>
-                )}
-              </div>
-              {/* Actions (manual only) */}
-              {task.source === "manual" && (
-                <div className="flex gap-0.5">
-                  <button
-                    onClick={() => onEdit?.(task)}
-                    className="p-2 rounded hover:bg-foreground/5 text-muted-fg hover:text-foreground transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
-                    title="Edit"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDelete?.(task.id)}
-                    className="p-2 rounded hover:bg-red-500/10 text-muted-fg hover:text-red-400 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-          {task.description && (
-            <p className="text-sm text-muted-fg mt-1">{task.description}</p>
-          )}
-          <div className="flex items-center gap-3 mt-2 text-xs">
-            <span className={priorityColors[task.priority]}>
-              {task.priority.toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
