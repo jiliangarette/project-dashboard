@@ -52,11 +52,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const openaiKey = process.env.OPENAI_API_KEY;
+    const openrouterKey = process.env.OPENROUTER_API_KEY;
     
-    if (!openaiKey) {
+    if (!openrouterKey) {
       return NextResponse.json(
-        { error: "OpenAI API key not configured" },
+        { error: "OpenRouter API key not configured" },
         { status: 500 }
       );
     }
@@ -73,15 +73,17 @@ ${commitList}
 
 Rewrite these commits into a daily changelog following the rules. Output JSON only.`;
 
-    // Call OpenAI API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Call OpenRouter API (using free model)
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${openaiKey}`,
+        "Authorization": `Bearer ${openrouterKey}`,
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "Project Dashboard",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "meta-llama/llama-3.1-8b-instruct:free",
         messages: [
           {
             role: "system",
@@ -92,14 +94,13 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
             content: userPrompt,
           },
         ],
-        response_format: { type: "json_object" },
         max_tokens: 2048,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("OpenAI API error:", errorData);
+      console.error("OpenRouter API error:", errorData);
       
       if (response.status === 429) {
         return NextResponse.json(
