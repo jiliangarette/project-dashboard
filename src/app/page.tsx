@@ -5,6 +5,7 @@ import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Search, Filter, Star, WifiOff, Clock } from "lucide-react";
 import { clsx } from "clsx";
+import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
 
 export default function DashboardPage() {
@@ -297,6 +298,9 @@ export default function DashboardPage() {
           <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalIssues}</div>
         </div>
       </div>
+
+      {/* Language Distribution */}
+      <LanguageChart repos={repos} />
 
       {/* Filters and Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
