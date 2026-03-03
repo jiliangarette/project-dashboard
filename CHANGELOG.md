@@ -4,6 +4,21 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.7.0] — 2026-03-04 — Visual Analytics & UX Refinements
+
+### Added
+- **Dark/light theme toggle** — uses `next-themes` with system preference detection, persists in localStorage
+- **Keyboard shortcuts modal** — press `?` from anywhere to see all available shortcuts
+- **Commit activity heatmap** — GitHub-style 12-week contribution grid on project detail pages, with streak counter and weekly stats
+- **README tab** — renders repository README.md directly in the dashboard with basic markdown formatting
+- **Language distribution chart** — stacked bar chart on main dashboard showing language usage across all repos
+- **Top loading bar** — thin animated progress indicator during page navigation
+- **Footer** — source link and keyboard shortcut hint
+- **Security headers** — X-Frame-Options, X-Content-Type-Options, Referrer-Policy via Next.js config
+- **Image domain config** — GitHub avatar URLs whitelisted for Next.js Image optimization
+
+---
+
 ## [0.6.0] — 2026-03-04 — Polish & Production Readiness
 
 ### Added
