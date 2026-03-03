@@ -5,6 +5,8 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { Search, Github, WifiOff, Clock } from "lucide-react";
 import { toast } from "@/components/Toast";
 
+export const dynamic = 'force-dynamic';
+
 export default function DemoPage() {
   const [repos, setRepos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -161,7 +163,7 @@ export default function DemoPage() {
       {!loading && filteredRepos.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filteredRepos.map((repo) => (
-            <ProjectCard key={repo.id} repo={repo} isPinned={false} onTogglePin={() => {}} />
+            <ProjectCard key={repo.id} repo={repo} isPinned={false} />
           ))}
         </div>
       )}

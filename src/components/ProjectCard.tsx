@@ -47,7 +47,7 @@ function timeAgo(dateStr: string): string {
 interface ProjectCardProps {
   repo: GitHubRepo;
   isPinned: boolean;
-  onTogglePin: (repoId: number) => void;
+  onTogglePin?: (repoId: number) => void;
 }
 
 export const ProjectCard = memo(function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
@@ -60,7 +60,7 @@ export const ProjectCard = memo(function ProjectCard({ repo, isPinned, onToggleP
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onTogglePin(repo.id);
+          onTogglePin?.(repo.id);
         }}
         className={clsx(
           "absolute top-2 right-2 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center",
