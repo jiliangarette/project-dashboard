@@ -8,6 +8,7 @@ const shortcuts = [
   { keys: ["Esc"], description: "Clear search / close modal" },
   { keys: ["1"], description: "Changelog tab (project page)" },
   { keys: ["2"], description: "Tasks tab (project page)" },
+  { keys: ["3"], description: "README tab (project page)" },
   { keys: ["?"], description: "Toggle this help" },
 ];
 

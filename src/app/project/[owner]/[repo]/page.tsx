@@ -7,9 +7,11 @@ import { clsx } from "clsx";
 import { GitHubRepo } from "@/lib/github";
 import { ChangelogTab } from "@/components/ChangelogTab";
 import { TasksTab } from "@/components/TasksTab";
+import { ReadmeTab } from "@/components/ReadmeTab";
+import { CommitActivity } from "@/components/CommitActivity";
 import { toast } from "@/components/Toast";
 
-type Tab = "changelog" | "tasks";
+type Tab = "changelog" | "tasks" | "readme";
 
 const languageColors: Record<string, string> = {
   TypeScript: "#3178c6",
@@ -51,6 +53,8 @@ export default function ProjectDetailPage() {
         setActiveTab("changelog");
       } else if (e.key === "2") {
         setActiveTab("tasks");
+      } else if (e.key === "3") {
+        setActiveTab("readme");
       }
     }
 
@@ -206,6 +210,9 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
+      {/* Commit Activity Heatmap */}
+      <CommitActivity owner={owner} repo={repo} />
+
       {/* Tabs */}
       <div className="border-b border-card-border">
         <div className="flex gap-2 sm:gap-6" role="tablist" aria-label="Project views">
@@ -237,6 +244,20 @@ export default function ProjectDetailPage() {
           >
             Tasks
           </button>
+          <button
+            onClick={() => setActiveTab("readme")}
+            role="tab"
+            aria-selected={activeTab === "readme"}
+            aria-controls="tabpanel-readme"
+            className={clsx(
+              "pb-3 px-2 sm:px-1 border-b-2 transition-colors font-medium min-h-[44px] text-sm sm:text-base",
+              activeTab === "readme"
+                ? "border-accent text-accent"
+                : "border-transparent text-muted-fg hover:text-foreground"
+            )}
+          >
+            README
+          </button>
         </div>
       </div>
 
@@ -244,6 +265,7 @@ export default function ProjectDetailPage() {
       <div className="min-h-[400px]">
         {activeTab === "changelog" && <div id="tabpanel-changelog" role="tabpanel"><ChangelogTab owner={owner} repo={repo} /></div>}
         {activeTab === "tasks" && <div id="tabpanel-tasks" role="tabpanel"><TasksTab owner={owner} repo={repo} /></div>}
+        {activeTab === "readme" && <div id="tabpanel-readme" role="tabpanel"><ReadmeTab owner={owner} repo={repo} /></div>}
       </div>
     </div>
   );
