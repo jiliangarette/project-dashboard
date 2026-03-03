@@ -44,6 +44,21 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("changelog");
 
+  // Keyboard shortcuts for tab switching
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // 1 for Changelog, 2 for Tasks
+      if (e.key === "1") {
+        setActiveTab("changelog");
+      } else if (e.key === "2") {
+        setActiveTab("tasks");
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   useEffect(() => {
     async function loadRepo() {
       try {

@@ -1,142 +1,148 @@
 # Project Dashboard
 
-A centralized task management dashboard for managing multiple [Lovable](https://lovable.dev) projects from a single interface.
+Your GitHub projects, explained in plain English.
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss)
+## What is this?
 
-## Overview
+Project Dashboard connects to your GitHub account and shows you what's been happening across all your repositories — written in language anyone can understand.
 
-Project Dashboard provides a unified command center for tracking tasks across 9 Lovable projects. It bridges the gap between markdown-based task files (`TASKS.md`) used by AI agents and a visual web interface for human oversight.
+Instead of scrolling through technical commit messages like "fix onClick handler in Button.tsx", you get casual summaries like:
 
-### Managed Projects
+> "Mostly focused on the campaign builder today — added the multi-account selector and squashed a couple edge cases."
 
-| Project | Description |
-|---------|-------------|
-| ads-agency | Ad agency management platform |
-| ads-launcher | Ad campaign launcher |
-| aia-academy | AI Academy learning platform |
-| client-dashboard | Client-facing dashboard |
-| financial-presenter | Financial presentation tool |
-| financial-simulator | Financial simulation engine |
-| project-dashboard | This dashboard (self-managing) |
-| themoneybees | Finance/investment platform |
-| website-namecard-builder | Digital namecard/website builder |
+Raw commits → readable changelog. Automatically.
 
 ## Features
 
-### Multi-Project Overview
-- Project cards with progress bars showing completion percentage
-- Global stats bar: total tasks, pending, and done counts
-- Real-time task count updates via auto-sync
+### 📊 Dashboard Home
+- See all your GitHub repositories at a glance
+- Stats: total repos, active projects (last 30 days), stars, open issues
+- Search by name or description
+- Filter by programming language
+- Sort by: recently updated, most stars, name, issues
+- Pin your favorite projects to the top
 
-### Task Management
-- Create, edit, delete tasks with priority levels (low/medium/high)
-- One-click status toggle between todo and done
-- Manual task reordering (up/down)
-- Separate "To Do" and "Completed" sections
+### 📝 AI-Powered Changelogs
+The killer feature. Click any project and see its commit history rewritten into plain English:
 
-### TASKS.md Sync (Two-Way)
-- Automatically parses `TASKS.md` files from each project on load
-- Supports markdown checkboxes, tags (`[PLAN]`, `[AUTO]`, etc.), bold titles, and indented sub-items
-- Merges parsed tasks into dashboard without duplicates (matched by title)
-- Checking a task done in the dashboard updates the `TASKS.md` checkbox
+- Commits grouped by day
+- AI-generated summary capturing the day's focus
+- Bullet points explaining what changed and why it matters
+- No jargon, no file names, no technical gibberish
+- Cached locally so it doesn't regenerate every visit
 
-### Filtering & Sorting
-- Filter by status (todo/done) or source (manual/tasks.md)
-- Sort by: custom order, priority, status, date, or source
+Powered by Claude (Anthropic) with strict writing rules to keep it human and readable.
 
-### Documentation Viewer
-- View each project's `CLAUDE.md` and other `.md` files
-- Expandable docs panel on the project detail page
+### ✅ Task Management
+Each project has a Tasks tab:
 
-### AI Agent Compatible
-- `tasks.json` files are readable/writable by any AI agent
-- Refresh button reflects external file changes
-- Designed for human + AI collaborative workflows
+- Reads TASKS.md from your repo (if it exists)
+- Parses markdown checkboxes automatically
+- Create your own tasks manually (title, description, priority)
+- Mark as done with a click
+- Separate sections for To Do and Completed
 
-## Getting Started
+All manual tasks stored locally (localStorage) — no database needed.
 
-### Prerequisites
-- Node.js 18+
-- npm
+## Setup
 
-### Installation
+### 1. Prerequisites
+- Node.js 20+
+- A GitHub account
+- An Anthropic API key (for changelog generation)
 
+### 2. Create a GitHub OAuth App
+1. Go to https://github.com/settings/developers
+2. Click "New OAuth App"
+3. Fill in:
+   - Application name: `Project Dashboard`
+   - Homepage URL: `http://localhost:3000`
+   - Callback URL: `http://localhost:3000/api/auth/callback/github`
+4. Save the **Client ID** and generate a **Client Secret**
+
+### 3. Get an Anthropic API Key
+1. Visit https://console.anthropic.com/
+2. Go to API Keys
+3. Create a new key
+
+### 4. Set Up Environment Variables
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd project-dashboard
-
-# Install dependencies
-npm install
+cp .env.example .env
 ```
 
-### Development
+Fill in your `.env`:
+```env
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+NEXTAUTH_SECRET=run_openssl_rand_-base64_32
+NEXTAUTH_URL=http://localhost:3000
+ANTHROPIC_API_KEY=your_anthropic_api_key
+```
 
+Generate `NEXTAUTH_SECRET`:
 ```bash
-# Start the dev server
+openssl rand -base64 32
+```
+
+### 5. Install and Run
+```bash
+npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open http://localhost:3000
 
-### Production Build
+## Production Deployment
 
+When deploying (e.g., Vercel):
+
+1. Update your GitHub OAuth App:
+   - Homepage URL: `https://yourdomain.com`
+   - Callback URL: `https://yourdomain.com/api/auth/callback/github`
+
+2. Set environment variables on your platform:
+   - `NEXTAUTH_URL=https://yourdomain.com`
+   - Plus all the others from `.env`
+
+3. Build:
 ```bash
 npm run build
 npm start
 ```
 
-## Architecture
-
-```
-src/
-├── app/                    # Next.js App Router pages & API routes
-│   ├── page.tsx            # Dashboard home — project grid
-│   ├── project/[name]/     # Project detail page
-│   └── api/                # RESTful file I/O endpoints
-├── components/             # React UI components
-└── lib/                    # Shared logic (types, file I/O, parser)
-```
-
-### Data Flow
-
-1. **On dashboard load** → `POST /api/sync-all` syncs all projects' `TASKS.md`
-2. **On project open** → `POST /api/projects/[name]/sync` syncs that project
-3. **Task CRUD** → `GET/POST/PUT/DELETE /api/projects/[name]/tasks`
-4. **Status toggle** → Updates `tasks.json` AND `TASKS.md` checkbox
-
-### Storage
-
-No database — all data is stored as `tasks.json` files in each project directory. This keeps data co-located with the projects and accessible to AI agents.
-
-## API Reference
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/projects` | List all projects with task counts |
-| POST | `/api/sync-all` | Sync TASKS.md for all projects |
-| GET | `/api/projects/[name]/tasks` | Get tasks for a project |
-| POST | `/api/projects/[name]/tasks` | Create a new task |
-| PUT | `/api/projects/[name]/tasks` | Update a task |
-| DELETE | `/api/projects/[name]/tasks?id=` | Delete a task |
-| POST | `/api/projects/[name]/sync` | Sync single project's TASKS.md |
-| POST | `/api/projects/[name]/reorder` | Reorder tasks (up/down) |
-| GET | `/api/projects/[name]/docs` | Get CLAUDE.md and .md file list |
-
 ## Tech Stack
 
-- **Next.js 16** — App Router, API routes, server-side rendering
-- **React 19** — UI components with hooks
-- **TypeScript 5** — Strict mode, full type safety
-- **Tailwind CSS 4** — Utility-first styling, custom dark theme
-- **lucide-react** — Icon library
-- **clsx** — Conditional class names
-- **uuid** — Task ID generation
+- **Framework:** Next.js 16 (App Router)
+- **UI:** React 19
+- **Language:** TypeScript 5
+- **Styling:** Tailwind CSS 4
+- **Auth:** NextAuth.js with GitHub OAuth
+- **AI:** Anthropic Claude (Sonnet 4.5)
+- **Data:** GitHub API + localStorage (no database)
+
+## How It Works
+
+1. **Auth:** You sign in with GitHub. We get an access token to fetch your repos and commits.
+
+2. **Dashboard:** Fetches all your repos via GitHub API, shows stats, lets you search/filter/pin.
+
+3. **Changelog:** For each project:
+   - Fetches commits (last 90 days) from GitHub API
+   - Groups by day
+   - Sends each day's commits to Claude (Anthropic API)
+   - Claude rewrites them into plain English (summary + bullets)
+   - Caches result in localStorage so it doesn't regenerate every time
+
+4. **Tasks:** Fetches TASKS.md from the repo, parses it, displays with manual tasks you create. All stored locally.
+
+## Philosophy
+
+Commit messages are written for machines and developers. This tool translates them for humans. Think of it as a personal engineering journal that writes itself.
 
 ## License
 
-Private project — not for redistribution.
+MIT
+
+## Credits
+
+Built by Jilian Garette A. Abangan

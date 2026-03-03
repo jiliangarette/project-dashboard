@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Search, Filter, Star } from "lucide-react";
@@ -15,6 +15,27 @@ export default function DashboardPage() {
   const [languageFilter, setLanguageFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<"updated" | "stars" | "name" | "issues">("updated");
   const [pinnedRepos, setPinnedRepos] = useState<Set<number>>(new Set());
+  
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // / or Cmd+K to focus search
+      if (e.key === "/" || (e.metaKey && e.key === "k")) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      // Escape to clear search
+      if (e.key === "Escape") {
+        setSearchQuery("");
+        searchInputRef.current?.blur();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Load pinned repos from localStorage
   useEffect(() => {
