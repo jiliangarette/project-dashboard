@@ -3,28 +3,30 @@
 ## Backlog
 
 ### Infrastructure & DevOps
-- [ ] **Set up automated testing** — Add Jest + React Testing Library, write unit tests for parser and API routes
-- [ ] **Add CI/CD pipeline** — GitHub Actions for build verification on push
-- [ ] **Add error monitoring** — Integrate error tracking for production use
+- [x] **Set up automated testing** — Add Jest + React Testing Library, write unit tests for parser and API routes ✅
+- [x] **Add CI/CD pipeline** — GitHub Actions for build verification on push ✅
+- [ ] **Add error monitoring** — Integrate error tracking for production use (Sentry)
 - [ ] **Add environment config** — Move BASE_PATH to env variable for portability
 
 ### Features
-- [ ] **Search across all projects** — Global search bar to find tasks by title/description across all 9 projects
-- [ ] **Bulk actions** — Select multiple tasks and mark done/delete/change priority in one action
+- [x] **Search across all projects** — Global search bar to find repos by name/description ✅
+- [ ] **Bulk actions** — Select multiple repos and perform batch operations
 - [ ] **Task notes/comments** — Add timestamped notes to individual tasks for progress tracking
-- [ ] **Keyboard shortcuts** — Quick navigation: j/k for up/down, x to toggle done, n for new task
-- [ ] **Dashboard analytics** — Charts showing task completion trends over time per project
-- [ ] **Export/import** — Export task data as CSV or JSON for reporting
-- [ ] **Notification system** — Alert when TASKS.md changes are detected externally
-- [ ] **Project grouping/tags** — Group projects by category (finance, marketing, etc.)
+- [x] **Keyboard shortcuts** — Quick navigation: /, Esc, 1/2/3 for tabs, ? for help ✅
+- [x] **Dashboard analytics** — Charts showing language distribution, commit activity, repo stats ✅
+- [ ] **Export/import** — Export repo data as CSV or JSON for reporting
+- [ ] **Notification system** — Alert when repo changes are detected
+- [ ] **Project grouping/tags** — Group repos by topic/category
 
 ### UI/UX Improvements
 - [ ] **Mobile-optimized layout** — Improve touch targets and responsive behavior on phones
-- [ ] **Dark/light theme toggle** — Add theme switcher (currently dark-only)
+- [x] **Dark/light theme toggle** — Add theme switcher ✅
 - [ ] **Task due dates** — Optional due date field with overdue highlighting
-- [ ] **Drag-and-drop reorder** — Replace up/down arrows with drag-and-drop for task ordering
-- [ ] **Toast notifications** — Show success/error feedback for actions (create, delete, sync)
+- [ ] **Drag-and-drop reorder** — Drag-and-drop for repo pinning and task ordering
+- [x] **Toast notifications** — Show success/error feedback for actions ✅
 - [ ] **Skeleton loading polish** — Improve loading skeleton fidelity to match actual content layout
+- [x] **Custom 404 page** — User-friendly error page with navigation ✅
+- [x] **Enhanced SEO** — OpenGraph tags, Twitter cards, structured metadata ✅
 
 ### Parser Improvements
 - [ ] **Handle nested task lists** — Support deeper indentation levels in TASKS.md

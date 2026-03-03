@@ -4,6 +4,23 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.8.0] — 2026-03-04 — Testing, CI/CD & Production Polish
+
+### Added
+- **CI/CD pipeline** — GitHub Actions workflow for automated testing, linting, type checking, and build verification on every push and PR
+- **Testing infrastructure** — Jest + React Testing Library setup with example tests for components and utilities
+- **TESTING.md** — comprehensive testing guide with examples, best practices, and troubleshooting
+- **Custom 404 page** — user-friendly not-found page with helpful navigation links
+- **Enhanced SEO metadata** — OpenGraph tags, Twitter cards, detailed meta descriptions, and proper structured data
+- **Test scripts** — `npm test`, `npm run test:watch`, `npm run test:coverage` for running tests
+
+### Documentation
+- Added `TESTING.md` with full testing guide
+- Updated `package.json` with test dependencies and scripts
+- Enhanced metadata in `layout.tsx` for better social sharing and SEO
+
+---
+
 ## [0.7.0] — 2026-03-04 — Visual Analytics & UX Refinements
 
 ### Added
