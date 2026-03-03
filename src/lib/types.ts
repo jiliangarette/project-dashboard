@@ -4,6 +4,7 @@ export interface Task {
   description?: string;
   status: "todo" | "done";
   priority: "low" | "medium" | "high";
+  dueDate?: string; // ISO 8601 date string
   order?: number;
   source: "manual" | "tasks.md";
   sourceRef?: string;

@@ -2,7 +2,7 @@
 
 import { clsx } from "clsx";
 
-export type SortField = "priority" | "status" | "date" | "source" | "order";
+export type SortField = "priority" | "status" | "date" | "source" | "order" | "dueDate";
 export type FilterSource = "all" | "manual" | "tasks.md";
 export type FilterStatus = "all" | "todo" | "done";
 
@@ -85,6 +85,7 @@ export function TaskFilters({
         label="Sort"
         options={[
           { value: "order" as const, label: "Order" },
+          { value: "dueDate" as const, label: "Due Date" },
           { value: "priority" as const, label: "Priority" },
           { value: "status" as const, label: "Status" },
           { value: "date" as const, label: "Date" },

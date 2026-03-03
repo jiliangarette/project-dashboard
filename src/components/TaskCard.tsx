@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Trash2, FileCode, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Trash2, FileCode, ChevronUp, ChevronDown, Calendar, AlertCircle } from "lucide-react";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { PriorityBadge } from "./PriorityBadge";
 import { clsx } from "clsx";
@@ -31,13 +31,43 @@ export function TaskCard({
   isLast?: boolean;
 }) {
   const isDone = task.status === "done";
+  
+  // Calculate due date status
+  const getDueDateInfo = () => {
+    if (!task.dueDate || isDone) return null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(task.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = dueDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return { text: `${Math.abs(diffDays)}d overdue`, color: "text-danger", isOverdue: true };
+    } else if (diffDays === 0) {
+      return { text: "Due today", color: "text-warning", isOverdue: false };
+    } else if (diffDays === 1) {
+      return { text: "Due tomorrow", color: "text-warning", isOverdue: false };
+    } else if (diffDays <= 3) {
+      return { text: `Due in ${diffDays}d`, color: "text-warning", isOverdue: false };
+    } else if (diffDays <= 7) {
+      return { text: `Due in ${diffDays}d`, color: "text-muted-fg", isOverdue: false };
+    }
+    
+    return { text: dueDate.toLocaleDateString(), color: "text-muted", isOverdue: false };
+  };
+  
+  const dueDateInfo = getDueDateInfo();
 
   return (
     <div
       className={clsx(
         "task-card bg-card-bg border border-card-border rounded-lg p-4 transition-all duration-200",
         "hover:border-accent/30 hover:shadow-[0_0_12px_rgba(59,130,246,0.06)]",
-        isDone && "opacity-60"
+        isDone && "opacity-60",
+        dueDateInfo?.isOverdue && "border-danger/40 bg-danger/5"
       )}
     >
       <div className="flex items-start gap-3">
@@ -100,6 +130,19 @@ export function TaskCard({
             >
               {task.description}
             </p>
+          )}
+          {dueDateInfo && (
+            <div className={clsx(
+              "flex items-center gap-1 mt-2 text-xs",
+              dueDateInfo.color
+            )}>
+              {dueDateInfo.isOverdue ? (
+                <AlertCircle className="w-3 h-3" />
+              ) : (
+                <Calendar className="w-3 h-3" />
+              )}
+              <span>{dueDateInfo.text}</span>
+            </div>
           )}
         </div>
 

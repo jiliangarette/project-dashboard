@@ -15,6 +15,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Task["status"]>("todo");
   const [priority, setPriority] = useState<Task["priority"]>("medium");
+  const [dueDate, setDueDate] = useState("");
 
   useEffect(() => {
     if (task) {
@@ -22,6 +23,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
       setDescription(task.description || "");
       setStatus(task.status);
       setPriority(task.priority);
+      setDueDate(task.dueDate ? task.dueDate.split('T')[0] : "");
     }
   }, [task]);
 
@@ -34,6 +36,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
       description: description.trim() || undefined,
       status,
       priority,
+      dueDate: dueDate || undefined,
     });
   }
 
@@ -107,6 +110,18 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
                 <option value="high">High</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className="block text-sm text-muted-fg mb-1">
+              Due Date (optional)
+            </label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className={inputCls}
+              min={new Date().toISOString().split('T')[0]}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button
