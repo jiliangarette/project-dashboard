@@ -78,20 +78,22 @@ export function TaskCard({
       <div className="flex items-start gap-3">
         {/* Reorder arrows */}
         {onMoveUp && onMoveDown && (
-          <div className="flex flex-col gap-0.5 shrink-0 -my-1">
+          <div className="flex flex-col gap-0.5 shrink-0">
             <button
               onClick={() => onMoveUp(task.id)}
               disabled={isFirst}
-              className="p-0.5 rounded hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors disabled:opacity-25 disabled:cursor-default"
+              className="p-2 rounded hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors disabled:opacity-25 disabled:cursor-default min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Move up"
+              aria-label="Move task up"
             >
               <ChevronUp className="w-4 h-4" />
             </button>
             <button
               onClick={() => onMoveDown(task.id)}
               disabled={isLast}
-              className="p-0.5 rounded hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors disabled:opacity-25 disabled:cursor-default"
+              className="p-2 rounded hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors disabled:opacity-25 disabled:cursor-default min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Move down"
+              aria-label="Move task down"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
@@ -154,17 +156,19 @@ export function TaskCard({
         <div className="flex items-center gap-1 shrink-0 self-start">
           <button
             onClick={() => onEdit(task)}
-            className="p-1.5 rounded-md hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors"
-            title="Edit"
+            className="p-2 rounded-md hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
+            title="Edit task"
+            aria-label="Edit task"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(task.id)}
-            className="p-1.5 rounded-md hover:bg-red-500/10 text-muted-fg hover:text-danger transition-colors"
-            title="Delete"
+            className="p-2 rounded-md hover:bg-red-500/10 text-muted-fg hover:text-danger transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
+            title="Delete task"
+            aria-label="Delete task"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
