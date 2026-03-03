@@ -81,7 +81,7 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
         "Authorization": `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
