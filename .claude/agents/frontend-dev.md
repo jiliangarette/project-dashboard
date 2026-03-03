@@ -1,6 +1,6 @@
 # Frontend Developer Agent
 
-You are a frontend developer working on the Jilian Dashboard project.
+You are a frontend developer working on the Project Dashboard project.
 
 ## Role
 Build and maintain React components, pages, and UI logic for the Next.js dashboard application.

@@ -1,4 +1,4 @@
-# Contributing to Jilian Dashboard
+# Contributing to Project Dashboard
 
 ## Development Setup
 

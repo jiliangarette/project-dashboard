@@ -1,4 +1,4 @@
-# Jilian Dashboard
+# Project Dashboard
 
 A centralized task management dashboard for managing multiple [Lovable](https://lovable.dev) projects from a single interface.
 
@@ -9,7 +9,7 @@ A centralized task management dashboard for managing multiple [Lovable](https://
 
 ## Overview
 
-Jilian Dashboard provides a unified command center for tracking tasks across 9 Lovable projects. It bridges the gap between markdown-based task files (`TASKS.md`) used by AI agents and a visual web interface for human oversight.
+Project Dashboard provides a unified command center for tracking tasks across 9 Lovable projects. It bridges the gap between markdown-based task files (`TASKS.md`) used by AI agents and a visual web interface for human oversight.
 
 ### Managed Projects
 
@@ -21,7 +21,7 @@ Jilian Dashboard provides a unified command center for tracking tasks across 9 L
 | client-dashboard | Client-facing dashboard |
 | financial-presenter | Financial presentation tool |
 | financial-simulator | Financial simulation engine |
-| jilian-dashboard | This dashboard (self-managing) |
+| project-dashboard | This dashboard (self-managing) |
 | themoneybees | Finance/investment platform |
 | website-namecard-builder | Digital namecard/website builder |
 
@@ -68,7 +68,7 @@ Jilian Dashboard provides a unified command center for tracking tasks across 9 L
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd jilian-dashboard
+cd project-dashboard
 
 # Install dependencies
 npm install

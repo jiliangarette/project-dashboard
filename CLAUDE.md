@@ -1,10 +1,10 @@
-# Jilian Dashboard
+# Project Dashboard
 
 Centralized task management dashboard for 9 Lovable projects. Built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
 
 ## Project Purpose
 
-This is the command center for Jilian's multi-project Lovable ecosystem. It provides a unified interface to view, create, edit, and track tasks across all projects — bridging TASKS.md files (used by AI agents) with a visual web dashboard.
+This is the command center for a multi-project Lovable ecosystem. It provides a unified interface to view, create, edit, and track tasks across all projects — bridging TASKS.md files (used by AI agents) with a visual web dashboard.
 
 ## Tech Stack
 
@@ -52,8 +52,8 @@ src/
 
 ## Managed Projects
 
-All projects live under `C:\Users\Jilian\OneDrive\Desktop\Lovable-Projects\`:
-ads-agency, ads-launcher, aia-academy, client-dashboard, financial-presenter, financial-simulator, jilian-dashboard, themoneybees, website-namecard-builder
+All projects live under `~/OneDrive/Desktop/Lovable-Projects/` (resolved via `os.homedir()`):
+ads-agency, ads-launcher, aia-academy, client-dashboard, financial-presenter, financial-simulator, project-dashboard, themoneybees, website-namecard-builder
 
 ## Data Model
 

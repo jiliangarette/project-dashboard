@@ -1,10 +1,10 @@
-# Jilian Dashboard - Build Instructions
+# Project Dashboard - Build Instructions
 
-You are building the Jilian Dashboard - a project task manager for managing multiple Lovable projects.
+You are building the Project Dashboard - a project task manager for managing multiple Lovable projects.
 
 EXISTING PROJECT: Next.js 16 + React 19 + Tailwind 4 (already initialized with node_modules)
-BASE PATH for projects: C:\Users\Jilian\OneDrive\Desktop\Lovable-Projects
-Projects: ads-agency, ads-launcher, aia-academy, client-dashboard, financial-presenter, financial-simulator, jilian-dashboard, themoneybees, website-namecard-builder
+BASE PATH for projects: ~/OneDrive/Desktop/Lovable-Projects (resolved via os.homedir())
+Projects: ads-agency, ads-launcher, aia-academy, client-dashboard, financial-presenter, financial-simulator, project-dashboard, themoneybees, website-namecard-builder
 
 ## Architecture
 - Frontend: Next.js App Router (React 19 + TypeScript + Tailwind 4)
@@ -22,7 +22,7 @@ Projects: ads-agency, ads-launcher, aia-academy, client-dashboard, financial-pre
 
 ### 2. Project Detail View
 - Click project -> opens task list
-- Each task has: title, description (optional), status (todo/in-progress/done), priority (low/medium/high), created/updated dates, assignee (jilian/openclaw/lovable), source label (manual/tasks.md)
+- Each task has: title, description (optional), status (todo/in-progress/done), priority (low/medium/high), created/updated dates, source label (manual/tasks.md)
 
 ### 3. Task Management
 - Add, edit, delete tasks
@@ -38,7 +38,7 @@ Projects: ads-agency, ads-launcher, aia-academy, client-dashboard, financial-pre
   - ### headers -> task category/group
   - Bullets under TODO/Tasks headings -> todo
 - Merge into tasks.json (don't duplicate, match by title)
-- Default assignee: jilian for imported tasks
+- Default source: tasks.md for imported tasks
 - Optional two-way sync: marking done in dashboard updates TASKS.md checkbox
 
 ### 5. CLAUDE.md Awareness
@@ -52,7 +52,7 @@ Schema per task:
 - description: string (optional)
 - status: todo or in-progress or done
 - priority: low or medium or high
-- assignee: jilian or openclaw or lovable
+- source: manual or tasks.md
 - source: manual or tasks.md
 - sourceRef: string (e.g. line number)
 - createdAt: ISO date
@@ -82,4 +82,4 @@ Wrapper:
 - Make it fully functional end-to-end
 - Commit progress with descriptive messages using: "C:/Program Files/Git/bin/git.exe" add -A && "C:/Program Files/Git/bin/git.exe" commit -m "message"
 - Test that the build works: npm run build
-- When completely finished, run: openclaw system event --text "Done: Built Jilian Dashboard" --mode now
+- When completely finished, run: openclaw system event --text "Done: Built Project Dashboard" --mode now

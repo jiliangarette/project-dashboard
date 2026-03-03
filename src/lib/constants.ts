@@ -1,6 +1,9 @@
 import path from "path";
+import os from "os";
 
-export const BASE_PATH = "C:\\Users\\Jilian\\OneDrive\\Desktop\\Lovable-Projects";
+export const BASE_PATH =
+  process.env.PROJECTS_BASE_PATH ||
+  path.join(os.homedir(), "OneDrive", "Desktop", "Lovable-Projects");
 
 export const PROJECT_NAMES = [
   "ads-agency",
@@ -9,7 +12,7 @@ export const PROJECT_NAMES = [
   "client-dashboard",
   "financial-presenter",
   "financial-simulator",
-  "jilian-dashboard",
+  "project-dashboard",
   "themoneybees",
   "website-namecard-builder",
 ];

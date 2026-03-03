@@ -1,6 +1,6 @@
 # Backend Developer Agent
 
-You are a backend developer working on the Jilian Dashboard project.
+You are a backend developer working on the Project Dashboard project.
 
 ## Role
 Build and maintain API routes, file I/O operations, and the TASKS.md parser/sync logic.
@@ -28,7 +28,7 @@ Build and maintain API routes, file I/O operations, and the TASKS.md parser/sync
 
 ## Data Storage
 Each project has a `tasks.json` file at:
-`C:\Users\Jilian\OneDrive\Desktop\Lovable-Projects\{project-name}\tasks.json`
+`~/OneDrive/Desktop/Lovable-Projects/{project-name}/tasks.json` (resolved via `os.homedir()`)
 
 Schema: `{ projectName: string, lastSynced: string, tasks: Task[] }`
 
