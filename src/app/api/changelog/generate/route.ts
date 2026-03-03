@@ -99,8 +99,11 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("OpenRouter API error:", errorData);
+        const msg = response.status === 429
+          ? "AI provider rate limited. Wait a moment and try again."
+          : "Failed to generate changelog via OpenRouter";
         return NextResponse.json(
-          { error: "Failed to generate changelog" },
+          { error: msg },
           { status: response.status }
         );
       }
@@ -136,8 +139,11 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("OpenAI API error:", errorData);
+        const msg = response.status === 429
+          ? "OpenAI rate limited. Wait a moment and try again."
+          : "Failed to generate changelog via OpenAI";
         return NextResponse.json(
-          { error: "Failed to generate changelog" },
+          { error: msg },
           { status: response.status }
         );
       }
@@ -171,8 +177,11 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("Anthropic API error:", errorData);
+        const msg = response.status === 429
+          ? "Anthropic rate limited. Wait a moment and try again."
+          : "Failed to generate changelog via Anthropic";
         return NextResponse.json(
-          { error: "Failed to generate changelog" },
+          { error: msg },
           { status: response.status }
         );
       }

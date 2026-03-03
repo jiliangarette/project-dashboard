@@ -195,7 +195,7 @@ export function TasksTab({ owner, repo }: TasksTabProps) {
         <h2 className="text-lg font-semibold text-foreground">Tasks</h2>
         <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-white transition-colors min-h-[44px]"
         >
           <Plus className="w-4 h-4" />
           Add Task
@@ -331,7 +331,8 @@ function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
           onClick={() => onToggle?.(task.id)}
           disabled={!onToggle}
           className={clsx(
-            "mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+            "mt-0.5 w-6 h-6 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0",
+            "min-w-[24px] min-h-[24px]",
             task.status === "done"
               ? "bg-accent border-accent"
               : "border-card-border hover:border-accent",
@@ -376,20 +377,20 @@ function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
               </div>
               {/* Actions (manual only) */}
               {task.source === "manual" && (
-                <div className="flex gap-1">
+                <div className="flex gap-0.5">
                   <button
                     onClick={() => onEdit?.(task)}
-                    className="p-1 rounded hover:bg-foreground/5 text-muted-fg hover:text-foreground transition-colors"
+                    className="p-2 rounded hover:bg-foreground/5 text-muted-fg hover:text-foreground transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
                     title="Edit"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onDelete?.(task.id)}
-                    className="p-1 rounded hover:bg-red-500/10 text-muted-fg hover:text-red-400 transition-colors"
+                    className="p-2 rounded hover:bg-red-500/10 text-muted-fg hover:text-red-400 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
                     title="Delete"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               )}

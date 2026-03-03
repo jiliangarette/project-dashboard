@@ -41,6 +41,14 @@ export async function fetchUserRepos(
     );
 
     if (!response.ok) {
+      if (response.status === 403) {
+        const remaining = response.headers.get("X-RateLimit-Remaining");
+        if (remaining === "0") {
+          const resetTime = response.headers.get("X-RateLimit-Reset");
+          const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000).toLocaleTimeString() : "soon";
+          throw new Error(`GitHub API rate limit exceeded. Resets at ${resetDate}.`);
+        }
+      }
       const error = await response.json().catch(() => ({ message: "Unknown error" }));
       throw new Error(error.message || `GitHub API error: ${response.status}`);
     }
@@ -81,6 +89,12 @@ export async function fetchRepoInfo(
   });
 
   if (!response.ok) {
+    if (response.status === 403) {
+      const remaining = response.headers.get("X-RateLimit-Remaining");
+      if (remaining === "0") {
+        throw new Error("GitHub API rate limit exceeded. Try again later.");
+      }
+    }
     const error = await response.json().catch(() => ({ message: "Unknown error" }));
     throw new Error(error.message || `GitHub API error: ${response.status}`);
   }
@@ -115,6 +129,12 @@ export async function fetchRepoCommits(
     });
 
     if (!response.ok) {
+      if (response.status === 403) {
+        const remaining = response.headers.get("X-RateLimit-Remaining");
+        if (remaining === "0") {
+          throw new Error("GitHub API rate limit exceeded. Try again later.");
+        }
+      }
       const error = await response.json().catch(() => ({ message: "Unknown error" }));
       throw new Error(error.message || `GitHub API error: ${response.status}`);
     }

@@ -16,7 +16,7 @@ interface TaskFiltersProps {
 }
 
 const chipBase =
-  "px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer select-none";
+  "px-3 py-1.5 text-xs rounded-full border transition-colors cursor-pointer select-none min-h-[32px]";
 const chipActive =
   "bg-accent/15 text-accent border-accent/40";
 const chipInactive =
