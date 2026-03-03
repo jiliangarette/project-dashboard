@@ -4,7 +4,7 @@ import { fetchRepoFile } from "@/lib/github";
 
 export async function GET(
   request: Request,
-  { params }: { params: { owner: string; repo: string; path: string[] } }
+  { params }: { params: Promise<{ owner: string; repo: string; path: string[] }> }
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { owner, repo, path } = params;
+    const { owner, repo, path } = await params;
     const filePath = path.join("/");
 
     const content = await fetchRepoFile(owner, repo, filePath, session.accessToken);

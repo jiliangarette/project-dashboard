@@ -21,6 +21,6 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Exclude demo, login, api, static files, error pages, and settings from auth check
-  matcher: ["/((?!demo|login|api|_next/static|_next/image|favicon.ico|error|settings).*)"],
+  // Exclude demo, project detail pages, login, api, static files, error pages, and settings from auth check
+  matcher: ["/((?!demo|project|login|api|_next/static|_next/image|favicon.ico|error|settings).*)"],
 };
