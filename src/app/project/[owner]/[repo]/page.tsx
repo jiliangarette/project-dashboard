@@ -6,6 +6,7 @@ import { ArrowLeft, ExternalLink, Star, GitFork, AlertCircle, Calendar } from "l
 import { clsx } from "clsx";
 import { GitHubRepo } from "@/lib/github";
 import { ChangelogTab } from "@/components/ChangelogTab";
+import { TasksTab } from "@/components/TasksTab";
 
 type Tab = "changelog" | "tasks";
 
@@ -203,11 +204,7 @@ export default function ProjectDetailPage() {
       {/* Tab content */}
       <div className="min-h-[400px]">
         {activeTab === "changelog" && <ChangelogTab owner={owner} repo={repo} />}
-        {activeTab === "tasks" && (
-          <div className="bg-card-bg border border-card-border rounded-lg p-12 text-center">
-            <p className="text-muted-fg">Tasks will appear here (Phase 5)</p>
-          </div>
-        )}
+        {activeTab === "tasks" && <TasksTab owner={owner} repo={repo} />}
       </div>
     </div>
   );

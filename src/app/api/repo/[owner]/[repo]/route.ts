@@ -4,7 +4,7 @@ import { fetchRepoInfo } from "@/lib/github";
 
 export async function GET(
   request: Request,
-  { params }: { params: { owner: string; repo: string } }
+  { params }: { params: Promise<{ owner: string; repo: string }> }
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { owner, repo } = params;
+    const { owner, repo } = await params;
     const repoData = await fetchRepoInfo(owner, repo, session.accessToken);
 
     return NextResponse.json({ repo: repoData });
