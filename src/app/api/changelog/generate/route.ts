@@ -52,11 +52,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
     
-    if (!apiKey) {
+    if (!openaiKey) {
       return NextResponse.json(
-        { error: "Anthropic API key not configured" },
+        { error: "OpenAI API key not configured" },
         { status: 500 }
       );
     }
@@ -73,30 +73,33 @@ ${commitList}
 
 Rewrite these commits into a daily changelog following the rules. Output JSON only.`;
 
-    // Call Anthropic API
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    // Call OpenAI API
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "Authorization": `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 2048,
-        system: SYSTEM_PROMPT,
+        model: "gpt-4o",
         messages: [
+          {
+            role: "system",
+            content: SYSTEM_PROMPT,
+          },
           {
             role: "user",
             content: userPrompt,
           },
         ],
+        response_format: { type: "json_object" },
+        max_tokens: 2048,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("Anthropic API error:", errorData);
+      console.error("OpenAI API error:", errorData);
       
       if (response.status === 429) {
         return NextResponse.json(
@@ -112,7 +115,7 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
     }
 
     const data = await response.json();
-    const content = data.content[0].text;
+    const content = data.choices[0].message.content;
 
     // Parse JSON from response
     let parsed;
