@@ -1,9 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { FolderOpen, FileText, Clock } from "lucide-react";
+import { Star, GitFork, AlertCircle, Pin } from "lucide-react";
 import { clsx } from "clsx";
-import type { ProjectSummary } from "@/lib/types";
+import type { GitHubRepo } from "@/lib/github";
+
+// Language colors matching GitHub's
+const languageColors: Record<string, string> = {
+  TypeScript: "#3178c6",
+  JavaScript: "#f1e05a",
+  Python: "#3572A5",
+  Java: "#b07219",
+  Go: "#00ADD8",
+  Rust: "#dea584",
+  Ruby: "#701516",
+  PHP: "#4F5D95",
+  C: "#555555",
+  "C++": "#f34b7d",
+  "C#": "#178600",
+  Swift: "#F05138",
+  Kotlin: "#A97BFF",
+  Dart: "#00B4AB",
+  Vue: "#41b883",
+  HTML: "#e34c26",
+  CSS: "#563d7c",
+  Shell: "#89e051",
+  Lua: "#000080",
+};
 
 function timeAgo(dateStr: string): string {
   const date = new Date(dateStr);
@@ -11,65 +34,88 @@ function timeAgo(dateStr: string): string {
   const diffMs = now.getTime() - date.getTime();
   const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins} min ago`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours} hours ago`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  return `${months} months ago`;
 }
 
-export function ProjectCard({ project }: { project: ProjectSummary }) {
-  const doneCount = project.totalCount - project.pendingCount;
-  const pct = project.totalCount > 0 ? Math.round((doneCount / project.totalCount) * 100) : 0;
+interface ProjectCardProps {
+  repo: GitHubRepo;
+  isPinned: boolean;
+  onTogglePin: (repoId: number) => void;
+}
+
+export function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
+  const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
 
   return (
-    <Link href={`/project/${project.name}`}>
-      <div className="bg-card-bg border border-card-border rounded-xl p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group cursor-pointer">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-5 h-5 text-accent group-hover:text-accent-hover transition-colors" />
-            <h3 className="font-semibold text-foreground">{project.name}</h3>
-          </div>
-          {project.hasClaude && (
-            <span title="Has CLAUDE.md"><FileText className="w-4 h-4 text-muted-fg" /></span>
-          )}
-        </div>
-        <div className="flex items-center gap-4 text-sm text-muted-fg">
-          <span
-            className={clsx(
-              "font-medium",
-              project.pendingCount > 0 ? "text-warning" : "text-success"
+    <div className="relative bg-card-bg border border-card-border rounded-xl p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group">
+      {/* Pin button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          onTogglePin(repo.id);
+        }}
+        className={clsx(
+          "absolute top-3 right-3 p-1.5 rounded-lg transition-all",
+          isPinned
+            ? "text-accent bg-accent/10"
+            : "text-muted-fg hover:text-accent hover:bg-accent/5"
+        )}
+        title={isPinned ? "Unpin" : "Pin to top"}
+      >
+        <Pin className={clsx("w-4 h-4", isPinned && "fill-accent")} />
+      </button>
+
+      <Link href={`/project/${repo.owner.login}/${repo.name}`}>
+        <div>
+          {/* Repo name */}
+          <h3 className="font-semibold text-foreground mb-2 pr-8">{repo.name}</h3>
+
+          {/* Description */}
+          <p className="text-sm text-muted-fg mb-4 line-clamp-2 min-h-[2.5rem]">
+            {repo.description || "No description"}
+          </p>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 text-xs text-muted-fg mb-3">
+            {repo.language && (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: languageColor }}
+                />
+                <span>{repo.language}</span>
+              </div>
             )}
-          >
-            {project.pendingCount} pending
-          </span>
-          <span>{project.totalCount} total</span>
+            {repo.stargazers_count > 0 && (
+              <div className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5" />
+                <span>{repo.stargazers_count}</span>
+              </div>
+            )}
+            {repo.forks_count > 0 && (
+              <div className="flex items-center gap-1">
+                <GitFork className="w-3.5 h-3.5" />
+                <span>{repo.forks_count}</span>
+              </div>
+            )}
+            {repo.open_issues_count > 0 && (
+              <div className="flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>{repo.open_issues_count}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Last updated */}
+          <div className="text-xs text-muted">Updated {timeAgo(repo.updated_at)}</div>
         </div>
-        {/* Progress bar */}
-        {project.totalCount > 0 && (
-          <div className="mt-3">
-            <div className="flex items-center justify-between text-xs text-muted mb-1">
-              <span>{pct}% complete</span>
-              <span>{doneCount}/{project.totalCount}</span>
-            </div>
-            <div className="h-1.5 bg-card-border rounded-full overflow-hidden">
-              <div
-                className={clsx(
-                  "progress-fill h-full rounded-full",
-                  pct === 100 ? "bg-success" : "bg-accent"
-                )}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-          </div>
-        )}
-        {project.hasTasks && (
-          <div className="flex items-center gap-1 mt-3 text-xs text-muted">
-            <Clock className="w-3 h-3" />
-            {timeAgo(project.lastUpdated)}
-          </div>
-        )}
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
