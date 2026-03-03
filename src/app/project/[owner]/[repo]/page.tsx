@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, Star, GitFork, AlertCircle, Calendar } from "lucide-react";
 import { clsx } from "clsx";
 import { GitHubRepo } from "@/lib/github";
+import { ChangelogTab } from "@/components/ChangelogTab";
 
 type Tab = "changelog" | "tasks";
 
@@ -201,11 +202,7 @@ export default function ProjectDetailPage() {
 
       {/* Tab content */}
       <div className="min-h-[400px]">
-        {activeTab === "changelog" && (
-          <div className="bg-card-bg border border-card-border rounded-lg p-12 text-center">
-            <p className="text-muted-fg">Changelog will appear here (Phase 4)</p>
-          </div>
-        )}
+        {activeTab === "changelog" && <ChangelogTab owner={owner} repo={repo} />}
         {activeTab === "tasks" && (
           <div className="bg-card-bg border border-card-border rounded-lg p-12 text-center">
             <p className="text-muted-fg">Tasks will appear here (Phase 5)</p>
