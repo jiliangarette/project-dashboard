@@ -1,3 +1,9 @@
+export interface TaskNote {
+  id: string;
+  text: string;
+  timestamp: string; // ISO 8601
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -5,6 +11,7 @@ export interface Task {
   status: "todo" | "done";
   priority: "low" | "medium" | "high";
   dueDate?: string; // ISO 8601 date string
+  notes?: TaskNote[]; // Timestamped progress notes
   order?: number;
   source: "manual" | "tasks.md";
   sourceRef?: string;

@@ -3,6 +3,7 @@
 import { Pencil, Trash2, FileCode, ChevronUp, ChevronDown, Calendar, AlertCircle } from "lucide-react";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { PriorityBadge } from "./PriorityBadge";
+import { TaskNotes } from "./TaskNotes";
 import { clsx } from "clsx";
 import type { Task } from "@/lib/types";
 
@@ -18,6 +19,8 @@ export function TaskCard({
   onDelete,
   onMoveUp,
   onMoveDown,
+  onAddNote,
+  onDeleteNote,
   isFirst,
   isLast,
 }: {
@@ -27,6 +30,8 @@ export function TaskCard({
   onDelete: (id: string) => void;
   onMoveUp?: (id: string) => void;
   onMoveDown?: (id: string) => void;
+  onAddNote?: (taskId: string, noteText: string) => void;
+  onDeleteNote?: (taskId: string, noteId: string) => void;
   isFirst?: boolean;
   isLast?: boolean;
 }) {
@@ -146,7 +151,7 @@ export function TaskCard({
           )}
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 self-start">
           <button
             onClick={() => onEdit(task)}
             className="p-1.5 rounded-md hover:bg-input-bg text-muted-fg hover:text-foreground transition-colors"
@@ -163,6 +168,15 @@ export function TaskCard({
           </button>
         </div>
       </div>
+
+      {/* Task Notes - only for manual tasks */}
+      {task.source === "manual" && onAddNote && onDeleteNote && (
+        <TaskNotes
+          notes={task.notes || []}
+          onAddNote={(text) => onAddNote(task.id, text)}
+          onDeleteNote={(noteId) => onDeleteNote(task.id, noteId)}
+        />
+      )}
     </div>
   );
 }
