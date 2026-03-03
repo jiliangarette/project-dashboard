@@ -4,6 +4,29 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.10.0] — 2026-03-04 — Production Error Monitoring
+
+### Added
+- **Sentry integration** — Full error tracking for production (optional, only activates when DSN is provided)
+- **Session replay** — Capture 10% of sessions and 100% of error sessions for debugging
+- **Performance monitoring** — Track slow API calls, page loads, and navigation transitions
+- **Global error handler** — Catch and report React render errors from anywhere in the app
+- **Request error tracking** — Instrument Next.js `onRequestError` hook for server-side error capture
+- **Automatic filtering** — Ignore browser extensions, network timeouts, and user cancellations
+- **SENTRY_SETUP.md** — Complete setup guide with Vercel instructions
+
+### Technical
+- Moved Sentry initialization to `instrumentation.ts` and `instrumentation-client.ts` (Next.js 15+ recommended pattern)
+- Added `global-error.tsx` for React render error boundary
+- Added `onRouterTransitionStart` hook for navigation performance tracking
+- Updated `.env.example` and `.env.production.example` with Sentry variables
+- Wrapped `next.config.ts` with `withSentryConfig` for source map uploads
+
+### Dependencies
+- Added `@sentry/nextjs@^9` for error monitoring
+
+---
+
 ## [0.9.0] — 2026-03-04 — Task Management Enhancements
 
 ### Added

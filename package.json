@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.42.0",
     "@supabase/supabase-js": "^2.98.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
