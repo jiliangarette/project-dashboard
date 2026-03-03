@@ -4,6 +4,29 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.9.0] — 2026-03-04 — Task Management Enhancements
+
+### Added
+- **Task due dates** — Optional due date field with smart date picker (min: today)
+- **Overdue task highlighting** — Tasks past due date show with red border and background tint
+- **Relative due date display** — Shows "overdue", "due today", "due tomorrow", or "due in X days" with color coding
+- **Due date calendar icon** — Visual indicator for upcoming tasks with alert icon for overdue
+- **Due Date sort option** — Added to task filter controls for sorting by due date
+- **Task notes/comments (UI)** — Expandable notes section on task cards with timestamped entries
+- **TaskNotes component** — Collapsible note thread with relative timestamps, add/delete functionality
+- **Note timestamps** — Smart formatting (just now, Xm ago, Xh ago, Xd ago, or date)
+
+### In Progress
+- Task notes backend integration with TasksTab localStorage (UI complete, wiring pending)
+
+### Technical
+- Updated Task type to include `dueDate` and `notes` fields
+- Enhanced TaskCard with due date logic and visual states
+- Added TaskNotes component for note management
+- Extended TaskFilters to support "dueDate" sort field
+
+---
+
 ## [0.8.0] — 2026-03-04 — Testing, CI/CD & Production Polish
 
 ### Added
