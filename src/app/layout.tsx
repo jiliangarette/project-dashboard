@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastContainer } from "@/components/Toast";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { Footer } from "@/components/Footer";
+import { TopLoader } from "@/components/TopLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
           >
             Skip to content
           </a>
+          <TopLoader />
           <Header />
           <ErrorBoundary>
             <main id="main-content" role="main" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
