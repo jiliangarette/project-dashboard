@@ -53,15 +53,16 @@ export function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
   const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
 
   return (
-    <div className="relative bg-card-bg border border-card-border rounded-xl p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group">
+    <div className="relative bg-card-bg border border-card-border rounded-xl p-4 sm:p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group">
       {/* Pin button */}
       <button
         onClick={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           onTogglePin(repo.id);
         }}
         className={clsx(
-          "absolute top-3 right-3 p-1.5 rounded-lg transition-all",
+          "absolute top-2 right-2 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center",
           isPinned
             ? "text-accent bg-accent/10"
             : "text-muted-fg hover:text-accent hover:bg-accent/5"

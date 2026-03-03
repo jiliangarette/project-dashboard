@@ -1,14 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Auto-redirect to demo mode
     router.push("/demo");
   }, [router]);
 
@@ -18,5 +17,21 @@ export default function AuthErrorPage() {
         <p className="text-muted-fg">Redirecting to Demo Mode...</p>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-fg">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <AuthErrorContent />
+    </Suspense>
   );
 }

@@ -31,7 +31,7 @@ export async function fetchUserRepos(
 
   while (hasMore) {
     const response = await fetch(
-      `https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner`,
+      `https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner,collaborator,organization_member`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

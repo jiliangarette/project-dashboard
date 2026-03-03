@@ -1,16 +1,16 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 
-export default function ErrorPage() {
+function ErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
   useEffect(() => {
-    // Auto-redirect OAuth errors to demo mode
     if (error === "Configuration" || error === "OAuthCallback") {
       const timer = setTimeout(() => {
         router.push("/demo");
@@ -22,7 +22,7 @@ export default function ErrorPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
-        <AlertCircle className="w-16 h-16 mx-auto text-destructive" />
+        <AlertCircle className="w-16 h-16 mx-auto text-danger" />
         <h1 className="text-2xl font-bold text-foreground">
           {error === "Configuration" || error === "OAuthCallback"
             ? "OAuth Not Configured"
@@ -44,12 +44,28 @@ export default function ErrorPage() {
         {(error === "Configuration" || error === "OAuthCallback") && (
           <button
             onClick={() => router.push("/demo")}
-            className="mt-4 px-6 py-3 rounded-lg bg-accent hover:bg-accent-hover text-white transition-colors"
+            className="mt-4 px-6 py-3 rounded-lg bg-accent hover:bg-accent-hover text-white transition-colors min-h-[44px]"
           >
             Go to Demo Now
           </button>
         )}
       </div>
     </div>
+  );
+}
+
+export default function ErrorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center p-6">
+          <div className="text-center">
+            <p className="text-muted-fg">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <ErrorContent />
+    </Suspense>
   );
 }
