@@ -7,6 +7,7 @@ import { SessionProvider } from "@/components/SessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastContainer } from "@/components/Toast";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import { Footer } from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
               {children}
             </main>
           </ErrorBoundary>
+          <Footer />
           <ToastContainer />
           <KeyboardShortcutsModal />
         </SessionProvider>
