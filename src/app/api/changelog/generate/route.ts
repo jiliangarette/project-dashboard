@@ -176,8 +176,8 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
           ],
           response_format: { type: "json_object" },
           ...(useNewTokenParam
-            ? { max_completion_tokens: 50000 }
-            : { max_tokens: 50000 }),
+            ? { max_completion_tokens: 32000 }
+            : { max_tokens: 32000 }),
         }),
       });
 

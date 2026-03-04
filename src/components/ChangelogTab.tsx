@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { RefreshCw, Sparkles, Calendar, AlertCircle, ChevronDown, GitCommit, Users } from "lucide-react";
 import { clsx } from "clsx";
 import { toast } from "@/components/Toast";
+import { ChangelogSkeleton } from "@/components/ChangelogSkeleton";
 import {
   groupCommitsByDay,
   getCachedChangelog,
@@ -450,15 +451,7 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
   // ── Render ───────────────────────────────────────────────────
 
   if (loading) {
-    return (
-      <div className="space-y-3 animate-pulse">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="bg-card-bg border border-card-border rounded-lg p-4">
-            <div className="h-5 bg-muted/20 rounded w-48" />
-          </div>
-        ))}
-      </div>
-    );
+    return <ChangelogSkeleton />;
   }
 
   if (error) {

@@ -9,6 +9,7 @@ import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
 import { exportReposAsCSV, exportReposAsJSON } from "@/lib/export";
 import { MobileOptimizedFilters } from "@/components/MobileOptimizedFilters";
+import { DashboardLoadingSkeleton } from "@/components/ProjectCardSkeleton";
 
 export default function DashboardPage() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -249,33 +250,7 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        {/* Stats skeleton */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="rounded-lg border border-card-border bg-card-bg p-4 animate-pulse">
-              <div className="h-4 bg-muted/20 rounded w-24 mb-2" />
-              <div className="h-8 bg-muted/20 rounded w-16" />
-            </div>
-          ))}
-        </div>
-
-        {/* Cards skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="rounded-lg border border-card-border bg-card-bg p-4 animate-pulse">
-              <div className="h-5 bg-muted/20 rounded w-3/4 mb-2" />
-              <div className="h-4 bg-muted/20 rounded w-full mb-4" />
-              <div className="flex gap-2">
-                <div className="h-4 bg-muted/20 rounded w-16" />
-                <div className="h-4 bg-muted/20 rounded w-16" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardLoadingSkeleton />;
   }
 
   if (error) {
