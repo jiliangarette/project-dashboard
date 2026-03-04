@@ -20,7 +20,7 @@
 
 ### UI/UX Improvements
 - [x] **Mobile touch targets** — All buttons/checkboxes meet 44px minimum for touch accessibility ✅
-- [ ] **Mobile-optimized layout** — Improve responsive behavior on phones (forms, cards)
+- [x] **Mobile-optimized layout** — Collapsible filter panels, larger text, better spacing on mobile ✅
 - [x] **Dark/light theme toggle** — Add theme switcher ✅
 - [x] **Task due dates** — Optional due date field with overdue highlighting ✅
 - [ ] **Drag-and-drop reorder** — Drag-and-drop for repo pinning and task ordering

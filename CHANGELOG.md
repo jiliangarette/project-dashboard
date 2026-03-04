@@ -4,6 +4,27 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.13.0] — 2026-03-04 — Mobile-Optimized UI
+
+### Added
+- **Mobile-optimized filter panels** — Collapsible filter UI on mobile (<768px) with 44px touch targets
+- **MobileOptimizedFilters component** — Reusable mobile filter panel for dashboard
+- **Active filter badges** — Shows count of active filters on mobile toggle button
+- **Larger mobile text** — text-base (16px) on mobile vs text-sm (14px) on desktop for better readability
+- **Clear all filters** — One-tap button to reset all filters when active
+- **Mobile-responsive TaskFilters** — Tasks page filters now collapse on mobile with improved UX
+
+### Changed
+- Dashboard filters now collapse into single button on mobile, expand to full panel
+- TaskFilters component updated with mobile/desktop responsive design
+- Filter dropdowns use larger text and spacing on mobile for better touch experience
+- Desktop retains original inline filter layout (no visual change)
+
+### Removed
+- Footer component from main layout for cleaner mobile experience
+
+---
+
 ## [0.12.0] — 2026-03-04 — Bulk Actions, Export & Deployment Config
 
 ### Added
