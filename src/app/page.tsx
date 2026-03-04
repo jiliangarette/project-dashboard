@@ -8,6 +8,7 @@ import { clsx } from "clsx";
 import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
 import { exportReposAsCSV, exportReposAsJSON } from "@/lib/export";
+import { MobileOptimizedFilters } from "@/components/MobileOptimizedFilters";
 
 export default function DashboardPage() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -370,43 +371,19 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="flex gap-2">
-          <select
-            value={activityFilter}
-            onChange={(e) => setActivityFilter(e.target.value as typeof activityFilter)}
-            className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px] text-sm"
-            aria-label="Filter by activity"
-          >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="all">All repos</option>
-          </select>
+        {/* Filters: Mobile-optimized collapsible on small screens, inline on desktop */}
+        <MobileOptimizedFilters
+          languageFilter={languageFilter}
+          setLanguageFilter={setLanguageFilter}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          activityFilter={activityFilter}
+          setActivityFilter={setActivityFilter}
+          languages={languages}
+        />
 
-          <select
-            value={languageFilter}
-            onChange={(e) => setLanguageFilter(e.target.value)}
-            className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px] text-sm"
-            aria-label="Filter by language"
-          >
-            <option value="">All Languages</option>
-            {languages.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px] text-sm"
-            aria-label="Sort repositories"
-          >
-            <option value="updated">Recent</option>
-            <option value="stars">Stars</option>
-            <option value="name">Name</option>
-            <option value="issues">Issues</option>
-          </select>
+        {/* Action buttons */}
+        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
 
           <button
             onClick={() => {

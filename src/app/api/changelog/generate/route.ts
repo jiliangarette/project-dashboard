@@ -12,27 +12,30 @@ interface GenerateRequest {
   model?: string;
 }
 
-const SYSTEM_PROMPT = `You rewrite technical git commit messages into plain English changelogs. One bullet per meaningful task or feature.
+const SYSTEM_PROMPT = `You rewrite technical git commit messages into a plain English changelog.
 
 RULES:
-1. Write for a non-technical reader — no jargon, no file names, no function names. Describe what changed and why it matters.
-2. Sound human — casual but confident, not robotic.
-3. No emoji anywhere in the output.
-4. Each bullet: 1-2 sentences from the user/product perspective. Combine related commits into one bullet.
-5. Skip meaningless commits: "fix typo", "merge branch", "update package-lock.json", "lint fix", etc.
-6. The summary captures the overall focus of the day, not just a repeat of bullets.
+1. Sort by wow factor — Lead with the most impactful, impressive, or complex work first. Read top-to-bottom from "biggest wins" to "smaller fixes."
+2. CRITICAL: Don't compress or merge tasks — Each commit gets its own bullet point. If there are 20 commits, produce close to 20 bullets. Do NOT combine multiple changes into one vague summary. More bullets is ALWAYS better. The only exception is truly redundant/duplicate commits (same work described twice) — skip those. Never produce fewer than 10 bullets if there are 10+ commits.
+3. Write for a non-technical CEO — Use clear, plain language. Avoid jargon, function names, file names, or developer shorthand. Describe what changed and why it matters, not how it was coded. A non-developer should read each bullet and immediately understand the value.
+4. Sound human, not robotic — Write naturally. Don't use stiff, overly formal phrasing or generic filler. Each bullet should feel like you're casually but confidently explaining what you did to your boss.
+5. No emoji anywhere in the output.
+6. No name or signature at the bottom.
+7. Use present tense — "displays", "shows", "renders", not past tense.
+8. Skip meaningless commits: "fix typo", "merge branch", "update package-lock.json", "lint fix", etc.
+9. The summary captures the overall focus of the period, not just a repeat of bullets.
 
 OUTPUT FORMAT — respond with valid JSON only (no markdown, no code fences):
 {
-  "summary": "1-2 sentence casual summary of the day's work",
+  "summary": "1-2 sentence casual summary of the work",
   "bullets": ["bullet 1", "bullet 2", ...]
 }
 
 GOOD example bullet:
-- "Campaign now lets agency owners choose which page and ad account to use per campaign, so each client gets the right setup without manual switching"
+- "Campaign wizard now lets agency owners choose which page and ad account to use per campaign, so each client gets the right setup without manual switching"
 
 BAD examples (never produce):
-- "Fix regional_regulation_identities keys to flat format" (too technical)
+- "Fix regional_regulation_identities keys to flat format: singapore_universal_beneficiary/payer" (too technical)
 - "Dashboard redesigned" (too brief/vague)
 - "Updated index.ts and fixed the onClick handler in Button.tsx" (file names)`;
 
@@ -57,16 +60,16 @@ export async function POST(request: Request) {
       return true;
     });
 
-    // Cap at 100 commits to keep prompt within model limits
-    const capped = uniqueCommits.slice(0, 100);
+    // Cap at 200 unique commits to keep prompt within model limits
+    const capped = uniqueCommits.slice(0, 200);
 
     // Build the commit list for the prompt
     const commitList = capped
       .map((c, i) => `${i + 1}. ${c.message.split("\n")[0].trim()}`)
       .join("\n");
 
-    const commitNote = uniqueCommits.length > 100
-      ? `\n(Showing 100 of ${uniqueCommits.length} unique commits — summarize the overall themes)\n`
+    const commitNote = uniqueCommits.length > 200
+      ? `\n(Showing 200 of ${uniqueCommits.length} unique commits — cover all major work)\n`
       : "";
 
     const userPrompt = `Date: ${date}
@@ -173,8 +176,8 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
           ],
           response_format: { type: "json_object" },
           ...(useNewTokenParam
-            ? { max_completion_tokens: 4096 }
-            : { max_tokens: 4096 }),
+            ? { max_completion_tokens: 50000 }
+            : { max_tokens: 50000 }),
         }),
       });
 

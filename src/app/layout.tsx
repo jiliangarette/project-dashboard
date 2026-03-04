@@ -6,7 +6,6 @@ import { SessionProvider } from "@/components/SessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastContainer } from "@/components/Toast";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
-import { Footer } from "@/components/Footer";
 import { TopLoader } from "@/components/TopLoader";
 
 const geistSans = Geist({
@@ -95,7 +94,6 @@ export default function RootLayout({
           <main id="main-content" role="main" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
             {children}
           </main>
-          <Footer />
           <ToastContainer />
           <KeyboardShortcutsModal />
         </SessionProvider>
