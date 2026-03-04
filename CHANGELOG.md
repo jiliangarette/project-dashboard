@@ -4,6 +4,22 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.12.0] — 2026-03-04 — Bulk Actions
+
+### Added
+- **Bulk selection mode** — Select button in toolbar to enable selection checkboxes on repo cards
+- **Bulk pin/unpin** — Pin or unpin multiple repositories at once
+- **Select all** — Quickly select all filtered repositories
+- **Selection toolbar** — Shows selected count and available actions when repos are selected
+- **Visual selection state** — Selected repos show with accent border and background tint
+
+### Changed
+- ProjectCard component updated to support selection mode
+- Pin button hidden when selection mode is active
+- Selection state cleared when canceling or completing bulk operations
+
+---
+
 ## [0.11.0] — 2026-03-04 — Mobile UX & Task Notes Integration
 
 ### Added
