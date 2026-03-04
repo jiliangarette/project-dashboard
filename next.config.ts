@@ -2,6 +2,10 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Support deploying to a subdirectory (e.g., /dashboard)
+  // Set NEXT_PUBLIC_BASE_PATH env var to customize
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+  
   eslint: {
     ignoreDuringBuilds: true,
   },
