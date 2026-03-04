@@ -10,6 +10,7 @@ import { toast } from "@/components/Toast";
 import { exportReposAsCSV, exportReposAsJSON } from "@/lib/export";
 import { MobileOptimizedFilters } from "@/components/MobileOptimizedFilters";
 import { DashboardLoadingSkeleton } from "@/components/ProjectCardSkeleton";
+import { loadRepoTags, getAllUniqueTags, type RepoTags } from "@/lib/tags";
 
 export default function DashboardPage() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -26,6 +27,8 @@ export default function DashboardPage() {
   const [pinnedRepos, setPinnedRepos] = useState<Set<number>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedRepos, setSelectedRepos] = useState<Set<number>>(new Set());
+  const [repoTags, setRepoTags] = useState<RepoTags>({});
+  const [tagFilter, setTagFilter] = useState<string>("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,6 +80,11 @@ export default function DashboardPage() {
         console.error("Failed to parse pinned repos:", e);
       }
     }
+  }, []);
+
+  // Load tags from localStorage
+  useEffect(() => {
+    setRepoTags(loadRepoTags());
   }, []);
 
   // Save pinned repos to localStorage
@@ -139,6 +147,9 @@ export default function DashboardPage() {
     return Array.from(langs).sort();
   }, [repos]);
 
+  // Get all unique tags for filter dropdown
+  const allTags = useMemo(() => getAllUniqueTags(), [repoTags]);
+
   // Filter and sort repos
   const filteredRepos = useMemo(() => {
     let filtered = repos;
@@ -162,6 +173,14 @@ export default function DashboardPage() {
       filtered = filtered.filter((repo) => repo.language === languageFilter);
     }
 
+    // Tag filter
+    if (tagFilter) {
+      filtered = filtered.filter((repo) => {
+        const tags = repoTags[repo.id] || [];
+        return tags.includes(tagFilter);
+      });
+    }
+
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case "updated":
@@ -178,7 +197,7 @@ export default function DashboardPage() {
     });
 
     return filtered;
-  }, [repos, searchQuery, languageFilter, sortBy, activityFilter]);
+  }, [repos, searchQuery, languageFilter, sortBy, activityFilter, tagFilter, repoTags]);
 
   // Separate pinned and unpinned
   const pinnedReposList = filteredRepos.filter((repo) => pinnedRepos.has(repo.id));
@@ -247,6 +266,11 @@ export default function DashboardPage() {
     });
     toast("info", `${selectedRepos.size} repositories unpinned`);
     clearSelection();
+  };
+
+  const handleTagsChange = () => {
+    // Reload tags from localStorage when they change
+    setRepoTags(loadRepoTags());
   };
 
   if (loading) {
@@ -355,6 +379,9 @@ export default function DashboardPage() {
           activityFilter={activityFilter}
           setActivityFilter={setActivityFilter}
           languages={languages}
+          tagFilter={tagFilter}
+          setTagFilter={setTagFilter}
+          tags={allTags}
         />
 
         {/* Action buttons */}
@@ -478,6 +505,8 @@ export default function DashboardPage() {
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedRepos.has(repo.id)}
                 onToggleSelect={toggleSelection}
+                tags={repoTags[repo.id] || []}
+                onTagsChange={handleTagsChange}
               />
             ))}
           </div>
@@ -504,6 +533,8 @@ export default function DashboardPage() {
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedRepos.has(repo.id)}
                 onToggleSelect={toggleSelection}
+                tags={repoTags[repo.id] || []}
+                onTagsChange={handleTagsChange}
               />
             ))}
           </div>

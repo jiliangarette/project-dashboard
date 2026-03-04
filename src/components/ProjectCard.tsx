@@ -1,10 +1,12 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import Link from "next/link";
 import { Star, GitFork, AlertCircle, Pin } from "lucide-react";
 import { clsx } from "clsx";
 import type { GitHubRepo } from "@/lib/github";
+import { TagManager } from "./TagManager";
+import { addRepoTag, removeRepoTag } from "@/lib/tags";
 
 // Language colors matching GitHub's
 const languageColors: Record<string, string> = {
@@ -51,6 +53,8 @@ interface ProjectCardProps {
   isSelectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (repoId: number) => void;
+  tags?: string[];
+  onTagsChange?: () => void;
 }
 
 export const ProjectCard = memo(function ProjectCard({ 
@@ -59,9 +63,21 @@ export const ProjectCard = memo(function ProjectCard({
   onTogglePin,
   isSelectionMode = false,
   isSelected = false,
-  onToggleSelect
+  onToggleSelect,
+  tags = [],
+  onTagsChange
 }: ProjectCardProps) {
   const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
+  
+  const handleAddTag = (tag: string) => {
+    addRepoTag(repo.id, tag);
+    onTagsChange?.();
+  };
+  
+  const handleRemoveTag = (tag: string) => {
+    removeRepoTag(repo.id, tag);
+    onTagsChange?.();
+  };
 
   return (
     <div className={clsx(
@@ -145,6 +161,17 @@ export const ProjectCard = memo(function ProjectCard({
               </div>
             )}
           </div>
+
+          {/* Tags */}
+          {(tags.length > 0 || !isSelectionMode) && (
+            <div className="mb-3">
+              <TagManager
+                tags={tags}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+              />
+            </div>
+          )}
 
           {/* Last updated */}
           <div className="text-xs text-muted">Updated {timeAgo(repo.updated_at)}</div>

@@ -4,6 +4,27 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
+## [0.14.0] — 2026-03-04 — Project Tags & Organization
+
+### Added
+- **Project tagging system** — Add custom tags to organize repositories by topic/category
+- **TagManager component** — Inline tag editing on project cards with add/remove functionality
+- **Tag filtering** — Filter repositories by tags in both mobile and desktop views
+- **Tag persistence** — Tags stored in localStorage and synced across sessions
+- **Tag utilities** — Helper functions for tag CRUD operations (`lib/tags.ts`)
+- **Case-insensitive tag matching** — Tags are normalized to lowercase to prevent duplicates
+- **Tag badges** — Visual tag display with accent colors and remove buttons
+- **Tag filter dropdown** — Shows all unique tags across projects for easy filtering
+- **Inline tag input** — Quick tag creation directly on project cards without modal dialogs
+
+### Changed
+- ProjectCard now includes tag management UI below stats and above last updated timestamp
+- MobileOptimizedFilters updated to include tag filter option
+- Dashboard filters now count active tag filter in the badge
+- Clear filters button resets tag filter along with other filters
+
+---
+
 ## [0.13.0] — 2026-03-04 — Mobile-Optimized UI & Loading Polish
 
 ### Added

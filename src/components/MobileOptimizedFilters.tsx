@@ -12,6 +12,9 @@ interface MobileOptimizedFiltersProps {
   activityFilter: string;
   setActivityFilter: (filter: any) => void;
   languages: string[];
+  tagFilter?: string;
+  setTagFilter?: (tag: string) => void;
+  tags?: string[];
 }
 
 export function MobileOptimizedFilters({
@@ -22,13 +25,17 @@ export function MobileOptimizedFilters({
   activityFilter,
   setActivityFilter,
   languages,
+  tagFilter = "",
+  setTagFilter,
+  tags = [],
 }: MobileOptimizedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const activeFiltersCount =
     (languageFilter ? 1 : 0) +
     (sortBy !== "updated" ? 1 : 0) +
-    (activityFilter !== "30d" ? 1 : 0);
+    (activityFilter !== "30d" ? 1 : 0) +
+    (tagFilter ? 1 : 0);
 
   const hasActiveFilters = activeFiltersCount > 0;
 
@@ -85,6 +92,27 @@ export function MobileOptimizedFilters({
               </select>
             </div>
 
+            {/* Tag Filter */}
+            {tags.length > 0 && setTagFilter && (
+              <div>
+                <label className="block text-xs font-medium text-muted-fg mb-2">
+                  Tag
+                </label>
+                <select
+                  value={tagFilter}
+                  onChange={(e) => setTagFilter(e.target.value)}
+                  className="w-full px-4 py-3 text-base rounded-lg border border-card-border bg-input-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
+                >
+                  <option value="">All Tags</option>
+                  {tags.map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Sort By */}
             <div>
               <label className="block text-xs font-medium text-muted-fg mb-2">
@@ -125,6 +153,7 @@ export function MobileOptimizedFilters({
                   setLanguageFilter("");
                   setSortBy("updated");
                   setActivityFilter("30d");
+                  setTagFilter?.("");
                 }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors min-h-[44px]"
               >
@@ -150,6 +179,21 @@ export function MobileOptimizedFilters({
             </option>
           ))}
         </select>
+
+        {tags.length > 0 && setTagFilter && (
+          <select
+            value={tagFilter}
+            onChange={(e) => setTagFilter(e.target.value)}
+            className="px-3 py-2 text-sm rounded-lg border border-card-border bg-input-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="">All Tags</option>
+            {tags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+        )}
 
         <select
           value={sortBy}
@@ -178,6 +222,7 @@ export function MobileOptimizedFilters({
               setLanguageFilter("");
               setSortBy("updated");
               setActivityFilter("30d");
+              setTagFilter?.("");
             }}
             className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
           >

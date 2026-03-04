@@ -16,7 +16,7 @@
 - [x] **Dashboard analytics** — Charts showing language distribution, commit activity, repo stats ✅
 - [x] **Export/import** — Export repo data as CSV or JSON for reporting ✅
 - [ ] **Notification system** — Alert when repo changes are detected
-- [ ] **Project grouping/tags** — Group repos by topic/category
+- [x] **Project grouping/tags** — Group repos by topic/category ✅
 
 ### UI/UX Improvements
 - [x] **Mobile touch targets** — All buttons/checkboxes meet 44px minimum for touch accessibility ✅
