@@ -4,7 +4,7 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
-## [0.13.0] — 2026-03-04 — Mobile-Optimized UI
+## [0.13.0] — 2026-03-04 — Mobile-Optimized UI & Loading Polish
 
 ### Added
 - **Mobile-optimized filter panels** — Collapsible filter UI on mobile (<768px) with 44px touch targets
@@ -13,12 +13,17 @@ All notable changes to **Project Dashboard** are documented in this file.
 - **Larger mobile text** — text-base (16px) on mobile vs text-sm (14px) on desktop for better readability
 - **Clear all filters** — One-tap button to reset all filters when active
 - **Mobile-responsive TaskFilters** — Tasks page filters now collapse on mobile with improved UX
+- **ProjectCardSkeleton** — Accurate loading skeleton matching actual card layout (pin, stats, language, description)
+- **DashboardLoadingSkeleton** — Full dashboard skeleton with search, stats grid, filters, and card grid
+- **ChangelogSkeleton** — Detailed changelog loading state with controls, day headers, and content preview
 
 ### Changed
 - Dashboard filters now collapse into single button on mobile, expand to full panel
 - TaskFilters component updated with mobile/desktop responsive design
 - Filter dropdowns use larger text and spacing on mobile for better touch experience
 - Desktop retains original inline filter layout (no visual change)
+- Loading skeletons now closely match actual UI layout for better perceived performance
+- OpenAI API max_tokens reduced from 50k to 32k (more reasonable limit)
 
 ### Removed
 - Footer component from main layout for cleaner mobile experience

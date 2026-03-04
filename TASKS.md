@@ -25,7 +25,7 @@
 - [x] **Task due dates** — Optional due date field with overdue highlighting ✅
 - [ ] **Drag-and-drop reorder** — Drag-and-drop for repo pinning and task ordering
 - [x] **Toast notifications** — Show success/error feedback for actions ✅
-- [ ] **Skeleton loading polish** — Improve loading skeleton fidelity to match actual content layout
+- [x] **Skeleton loading polish** — Improved loading skeletons matching actual UI layout ✅
 - [x] **Custom 404 page** — User-friendly error page with navigation ✅
 - [x] **Enhanced SEO** — OpenGraph tags, Twitter cards, structured metadata ✅
 
