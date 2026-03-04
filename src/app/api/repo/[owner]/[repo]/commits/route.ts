@@ -15,12 +15,10 @@ export async function GET(
 
     const { owner, repo } = await params;
     
-    // Get commits from last 90 days
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    const since = ninetyDaysAgo.toISOString();
-
-    const commits = await fetchRepoCommits(owner, repo, session.accessToken, since);
+    // Fetch last 1 year of commits — no limit on project detail pages
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const commits = await fetchRepoCommits(owner, repo, session.accessToken, oneYearAgo.toISOString());
 
     return NextResponse.json({ commits }, {
       headers: {

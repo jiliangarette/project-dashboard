@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [languageFilter, setLanguageFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<"updated" | "stars" | "name" | "issues">("updated");
+  const [activityFilter, setActivityFilter] = useState<"7d" | "30d" | "all">("30d");
   const [pinnedRepos, setPinnedRepos] = useState<Set<number>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedRepos, setSelectedRepos] = useState<Set<number>>(new Set());
@@ -140,6 +141,14 @@ export default function DashboardPage() {
   const filteredRepos = useMemo(() => {
     let filtered = repos;
 
+    // Activity filter
+    if (activityFilter !== "all") {
+      const days = activityFilter === "7d" ? 7 : 30;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      filtered = filtered.filter((repo) => new Date(repo.updated_at) > cutoff);
+    }
+
     if (searchQuery) {
       filtered = filtered.filter((repo) =>
         repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -167,7 +176,7 @@ export default function DashboardPage() {
     });
 
     return filtered;
-  }, [repos, searchQuery, languageFilter, sortBy]);
+  }, [repos, searchQuery, languageFilter, sortBy, activityFilter]);
 
   // Separate pinned and unpinned
   const pinnedReposList = filteredRepos.filter((repo) => pinnedRepos.has(repo.id));
@@ -362,6 +371,17 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex gap-2">
+          <select
+            value={activityFilter}
+            onChange={(e) => setActivityFilter(e.target.value as typeof activityFilter)}
+            className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px] text-sm"
+            aria-label="Filter by activity"
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="all">All repos</option>
+          </select>
+
           <select
             value={languageFilter}
             onChange={(e) => setLanguageFilter(e.target.value)}

@@ -12,35 +12,29 @@ interface GenerateRequest {
   model?: string;
 }
 
-const SYSTEM_PROMPT = `You are an AI that rewrites technical git commit messages into plain English changelogs that anyone can understand.
+const SYSTEM_PROMPT = `You rewrite technical git commit messages into plain English changelogs. One bullet per meaningful task or feature.
 
-WRITING RULES (you MUST follow these):
-1. Write for a non-technical reader - no jargon, no file names, no function names
-2. Sound human - casual but confident, not robotic
-3. NO EMOJI anywhere
-4. Each bullet: 1-2 sentences explaining the change from user/product perspective
-5. If multiple commits are related, combine into one bullet
-6. Skip meaningless commits entirely: "fix typo", "merge branch", "update package-lock.json", "lint fix", etc.
-7. Skip merge commits with no meaningful description
-8. The daily summary should capture overall vibe and focus, not just repeat bullets
+RULES:
+1. Write for a non-technical reader — no jargon, no file names, no function names. Describe what changed and why it matters.
+2. Sound human — casual but confident, not robotic.
+3. No emoji anywhere in the output.
+4. Each bullet: 1-2 sentences from the user/product perspective. Combine related commits into one bullet.
+5. Skip meaningless commits: "fix typo", "merge branch", "update package-lock.json", "lint fix", etc.
+6. The summary captures the overall focus of the day, not just a repeat of bullets.
 
-OUTPUT FORMAT:
-You must respond with valid JSON only (no markdown, no code fences):
+OUTPUT FORMAT — respond with valid JSON only (no markdown, no code fences):
 {
   "summary": "1-2 sentence casual summary of the day's work",
   "bullets": ["bullet 1", "bullet 2", ...]
 }
 
-GOOD EXAMPLES:
+GOOD example bullet:
 - "Campaign now lets agency owners choose which page and ad account to use per campaign, so each client gets the right setup without manual switching"
-- "The dashboard loads about twice as fast now because we stopped re-fetching data that was already on screen"
-- "Added a confirmation step before deleting a project, so you can't accidentally wipe something out with one click"
 
-BAD EXAMPLES (never produce):
+BAD examples (never produce):
 - "Fix regional_regulation_identities keys to flat format" (too technical)
-- "Dashboard redesigned" (too vague)
-- "Updated index.ts and fixed the onClick handler in Button.tsx" (file names)
-- "Various bug fixes and improvements" (meaningless)`;
+- "Dashboard redesigned" (too brief/vague)
+- "Updated index.ts and fixed the onClick handler in Button.tsx" (file names)`;
 
 export async function POST(request: Request) {
   try {
@@ -54,13 +48,29 @@ export async function POST(request: Request) {
       );
     }
 
+    // Deduplicate commits by first-line message (merge commits, CI reruns, etc.)
+    const seen = new Set<string>();
+    const uniqueCommits = commits.filter((c) => {
+      const key = c.message.split("\n")[0].trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Cap at 100 commits to keep prompt within model limits
+    const capped = uniqueCommits.slice(0, 100);
+
     // Build the commit list for the prompt
-    const commitList = commits
+    const commitList = capped
       .map((c, i) => `${i + 1}. ${c.message.split("\n")[0].trim()}`)
       .join("\n");
 
-    const userPrompt = `Date: ${date}
+    const commitNote = uniqueCommits.length > 100
+      ? `\n(Showing 100 of ${uniqueCommits.length} unique commits — summarize the overall themes)\n`
+      : "";
 
+    const userPrompt = `Date: ${date}
+${commitNote}
 Commits:
 ${commitList}
 
@@ -78,6 +88,8 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
         );
       }
 
+      const selectedModel = model || "liquid/lfm-2.5-1.2b-instruct:free";
+
       response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -87,21 +99,28 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
           "X-Title": "Project Dashboard",
         },
         body: JSON.stringify({
-          model: model || "meta-llama/llama-3.1-8b-instruct:free",
+          model: selectedModel,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: userPrompt },
           ],
-          max_tokens: 2048,
+          max_tokens: 4096,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("OpenRouter API error:", errorData);
-        const msg = response.status === 429
-          ? "AI provider rate limited. Wait a moment and try again."
-          : "Failed to generate changelog via OpenRouter";
+        console.error("OpenRouter API error:", response.status, errorData);
+        let msg = "Failed to generate changelog via OpenRouter";
+        if (response.status === 429) {
+          msg = "AI provider rate limited. Wait a moment and try again.";
+        } else if (errorData?.error?.message) {
+          msg = `OpenRouter: ${errorData.error.message}`;
+        } else if (response.status === 401) {
+          msg = "OpenRouter API key is invalid or expired.";
+        } else if (response.status === 402) {
+          msg = "OpenRouter: Insufficient credits.";
+        }
         return NextResponse.json(
           { error: msg },
           { status: response.status }
@@ -109,7 +128,24 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
       }
 
       const data = await response.json();
-      content = data.choices[0].message.content;
+      const message = data.choices[0].message;
+      // Handle reasoning-only models that return content in reasoning instead
+      content = message.content;
+      if (!content && message.reasoning) {
+        // Try to extract JSON from reasoning text
+        const reasoning = typeof message.reasoning === "string"
+          ? message.reasoning
+          : message.reasoning_details?.map((r: { text: string }) => r.text).join("") || "";
+        const jsonMatch = reasoning.match(/\{[\s\S]*"summary"[\s\S]*"bullets"[\s\S]*\}/);
+        if (jsonMatch) {
+          content = jsonMatch[0];
+        } else {
+          throw new Error(`Model "${selectedModel}" did not return usable content. Try a different model in Settings.`);
+        }
+      }
+      if (!content) {
+        throw new Error(`Model "${selectedModel}" returned empty response. Try a different model in Settings.`);
+      }
     } else if (provider === "openai") {
       const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
@@ -119,6 +155,10 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
         );
       }
 
+      const selectedOpenAIModel = model || "gpt-4.1-nano";
+      // Newer models (gpt-5*, gpt-4.1*) require max_completion_tokens instead of max_tokens
+      const useNewTokenParam = /^(gpt-5|gpt-4\.1)/.test(selectedOpenAIModel);
+
       response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -126,13 +166,15 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
           "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: model || "gpt-4o-mini",
+          model: selectedOpenAIModel,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: userPrompt },
           ],
           response_format: { type: "json_object" },
-          max_tokens: 2048,
+          ...(useNewTokenParam
+            ? { max_completion_tokens: 4096 }
+            : { max_tokens: 4096 }),
         }),
       });
 

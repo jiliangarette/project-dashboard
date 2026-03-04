@@ -5,8 +5,6 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { Search, Github, WifiOff, Clock } from "lucide-react";
 import { toast } from "@/components/Toast";
 
-export const dynamic = 'force-dynamic';
-
 export default function DemoPage() {
   const [repos, setRepos] = useState<{
     id: number;

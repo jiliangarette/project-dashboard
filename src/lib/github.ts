@@ -160,8 +160,8 @@ export async function fetchRepoCommits(
     hasMore = linkHeader?.includes('rel="next"') || false;
     page++;
 
-    // Stop if we've fetched enough (e.g., 90 days worth, roughly 900 commits max)
-    if (commits.length >= 900) {
+    // Safety cap to prevent runaway pagination on very active repos
+    if (commits.length >= 5000) {
       hasMore = false;
     }
   }

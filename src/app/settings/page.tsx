@@ -13,9 +13,9 @@ interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  aiProvider: "openrouter",
-  openrouterModel: "meta-llama/llama-3.1-8b-instruct:free",
-  openaiModel: "gpt-4o-mini",
+  aiProvider: "openai",
+  openrouterModel: "liquid/lfm-2.5-1.2b-instruct:free",
+  openaiModel: "gpt-4.1-nano",
   anthropicModel: "claude-sonnet-4-5",
 };
 
@@ -112,11 +112,14 @@ export default function SettingsPage() {
                   }
                   className="w-full px-4 py-2.5 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
                 >
-                  <option value="meta-llama/llama-3.1-8b-instruct:free">
-                    Llama 3.1 8B (FREE)
+                  <option value="liquid/lfm-2.5-1.2b-instruct:free">
+                    Liquid LFM 1.2B (FREE)
                   </option>
-                  <option value="meta-llama/llama-3.1-70b-instruct:free">
-                    Llama 3.1 70B (FREE)
+                  <option value="nvidia/nemotron-nano-9b-v2:free">
+                    Nemotron Nano 9B (FREE)
+                  </option>
+                  <option value="google/gemma-3n-e2b-it:free">
+                    Gemma 3N E2B (FREE)
                   </option>
                   <option value="google/gemini-flash-1.5">Gemini Flash 1.5</option>
                   <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
@@ -140,9 +143,10 @@ export default function SettingsPage() {
                   }
                   className="w-full px-4 py-2.5 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
                 >
-                  <option value="gpt-4o-mini">GPT-4o Mini (cheapest)</option>
+                  <option value="gpt-4.1-nano">GPT-4.1 Nano (default)</option>
+                  <option value="gpt-5-mini">GPT-5 Mini</option>
+                  <option value="gpt-4o-mini">GPT-4o Mini</option>
                   <option value="gpt-4o">GPT-4o</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
                 </select>
               </div>
             )}

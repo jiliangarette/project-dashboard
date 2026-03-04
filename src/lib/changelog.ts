@@ -45,6 +45,53 @@ export function groupCommitsByDay(commits: { sha: string; commit: { message: str
   return Array.from(grouped.values()).sort((a, b) => b.date.localeCompare(a.date));
 }
 
+export interface WeekCommits {
+  weekStart: string; // YYYY-MM-DD (Monday)
+  weekEnd: string;   // YYYY-MM-DD (Sunday)
+  days: DayCommits[];
+  totalCommits: number;
+}
+
+function getMonday(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  const day = d.getDay();
+  const diff = day === 0 ? 6 : day - 1; // Monday = 0 offset
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().split("T")[0];
+}
+
+function getSunday(mondayStr: string): string {
+  const d = new Date(mondayStr + "T00:00:00");
+  d.setDate(d.getDate() + 6);
+  return d.toISOString().split("T")[0];
+}
+
+export function groupCommitsByWeek(dayGroups: DayCommits[]): WeekCommits[] {
+  const weekMap = new Map<string, WeekCommits>();
+
+  dayGroups.forEach((day) => {
+    const monday = getMonday(day.date);
+    if (!weekMap.has(monday)) {
+      weekMap.set(monday, {
+        weekStart: monday,
+        weekEnd: getSunday(monday),
+        days: [],
+        totalCommits: 0,
+      });
+    }
+    const week = weekMap.get(monday)!;
+    week.days.push(day);
+    week.totalCommits += day.commits.length;
+  });
+
+  // Sort weeks descending, days within each week descending
+  const weeks = Array.from(weekMap.values()).sort((a, b) =>
+    b.weekStart.localeCompare(a.weekStart)
+  );
+  weeks.forEach((w) => w.days.sort((a, b) => b.date.localeCompare(a.date)));
+  return weeks;
+}
+
 export function getChangelogCacheKey(owner: string, repo: string, date: string): string {
   return `changelog:${owner}/${repo}:${date}`;
 }

@@ -25,13 +25,13 @@ function getWeekData(commits: GitHubCommit[]): { date: string; count: number; da
   const now = new Date();
   const days: { date: string; count: number; day: number; week: number }[] = [];
 
-  // Last 12 weeks (84 days)
-  for (let i = 83; i >= 0; i--) {
+  // Last 1 year (365 days)
+  for (let i = 364; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split("T")[0];
     const dayOfWeek = d.getDay(); // 0=Sun, 6=Sat
-    const weekIndex = Math.floor((83 - i) / 7);
+    const weekIndex = Math.floor((364 - i) / 7);
 
     days.push({
       date: dateStr,
@@ -138,7 +138,7 @@ export function CommitActivity({ owner, repo }: CommitActivityProps) {
           <GitCommit className="w-4 h-4 text-accent" />
           Commit Activity
         </h3>
-        <span className="text-xs text-muted-fg">Last 12 weeks</span>
+        <span className="text-xs text-muted-fg">Last year</span>
       </div>
 
       {/* Stats row */}
