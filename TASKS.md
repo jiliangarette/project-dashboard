@@ -6,7 +6,7 @@
 - [x] **Set up automated testing** — Add Jest + React Testing Library, write unit tests for parser and API routes ✅
 - [x] **Add CI/CD pipeline** — GitHub Actions for build verification on push ✅
 - [x] **Add error monitoring** — Integrated Sentry for production error tracking, session replay, and performance monitoring ✅
-- [ ] **Add environment config** — Move BASE_PATH to env variable for portability
+- [x] **Add environment config** — BASE_PATH env variable for subdirectory deployment ✅
 
 ### Features
 - [x] **Search across all projects** — Global search bar to find repos by name/description ✅

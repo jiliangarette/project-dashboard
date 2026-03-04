@@ -4,7 +4,7 @@ All notable changes to **Project Dashboard** are documented in this file.
 
 ---
 
-## [0.12.0] — 2026-03-04 — Bulk Actions
+## [0.12.0] — 2026-03-04 — Bulk Actions & Deployment Config
 
 ### Added
 - **Bulk selection mode** — Select button in toolbar to enable selection checkboxes on repo cards
@@ -12,11 +12,13 @@ All notable changes to **Project Dashboard** are documented in this file.
 - **Select all** — Quickly select all filtered repositories
 - **Selection toolbar** — Shows selected count and available actions when repos are selected
 - **Visual selection state** — Selected repos show with accent border and background tint
+- **BASE_PATH environment variable** — Deploy app to subdirectory via `NEXT_PUBLIC_BASE_PATH` (e.g., `/dashboard`)
 
 ### Changed
 - ProjectCard component updated to support selection mode
 - Pin button hidden when selection mode is active
 - Selection state cleared when canceling or completing bulk operations
+- `next.config.ts` now reads `NEXT_PUBLIC_BASE_PATH` for basePath configuration
 
 ---
 
