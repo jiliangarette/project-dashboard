@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
-import { Search, Star, WifiOff, Clock } from "lucide-react";
+import { Search, Star, WifiOff, Clock, CheckSquare, Pin, X } from "lucide-react";
 import { clsx } from "clsx";
 import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
@@ -20,6 +20,8 @@ export default function DashboardPage() {
   const [languageFilter, setLanguageFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<"updated" | "stars" | "name" | "issues">("updated");
   const [pinnedRepos, setPinnedRepos] = useState<Set<number>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedRepos, setSelectedRepos] = useState<Set<number>>(new Set());
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -194,6 +196,47 @@ export default function DashboardPage() {
     });
   };
 
+  const toggleSelection = (repoId: number) => {
+    setSelectedRepos((prev) => {
+      const next = new Set(prev);
+      if (next.has(repoId)) {
+        next.delete(repoId);
+      } else {
+        next.add(repoId);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedRepos(new Set(filteredRepos.map(r => r.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedRepos(new Set());
+    setIsSelectionMode(false);
+  };
+
+  const bulkPin = () => {
+    setPinnedRepos((prev) => {
+      const next = new Set(prev);
+      selectedRepos.forEach((id) => next.add(id));
+      return next;
+    });
+    toast("success", `${selectedRepos.size} repositories pinned`);
+    clearSelection();
+  };
+
+  const bulkUnpin = () => {
+    setPinnedRepos((prev) => {
+      const next = new Set(prev);
+      selectedRepos.forEach((id) => next.delete(id));
+      return next;
+    });
+    toast("info", `${selectedRepos.size} repositories unpinned`);
+    clearSelection();
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -343,8 +386,67 @@ export default function DashboardPage() {
             <option value="name">Name</option>
             <option value="issues">Issues</option>
           </select>
+
+          <button
+            onClick={() => {
+              setIsSelectionMode(!isSelectionMode);
+              setSelectedRepos(new Set());
+            }}
+            className={clsx(
+              "px-3 sm:px-4 py-2.5 rounded-lg transition-colors min-h-[44px] text-sm flex items-center gap-2",
+              isSelectionMode
+                ? "bg-accent text-white"
+                : "border border-card-border bg-card-bg text-foreground hover:bg-foreground/5"
+            )}
+            title="Select multiple repositories"
+          >
+            <CheckSquare className="w-4 h-4" />
+            <span className="hidden sm:inline">Select</span>
+          </button>
         </div>
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      {isSelectionMode && (
+        <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium text-foreground">
+              {selectedRepos.size} {selectedRepos.size === 1 ? 'repository' : 'repositories'} selected
+            </span>
+            <button
+              onClick={selectAll}
+              className="text-xs text-accent hover:underline"
+            >
+              Select all ({filteredRepos.length})
+            </button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={bulkPin}
+              disabled={selectedRepos.size === 0}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] text-sm"
+            >
+              <Pin className="w-4 h-4" />
+              Pin
+            </button>
+            <button
+              onClick={bulkUnpin}
+              disabled={selectedRepos.size === 0}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-card-border bg-card-bg hover:bg-foreground/5 text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] text-sm"
+            >
+              <Pin className="w-4 h-4" />
+              Unpin
+            </button>
+            <button
+              onClick={clearSelection}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-card-border bg-card-bg hover:bg-foreground/5 text-foreground transition-colors min-h-[40px] text-sm"
+            >
+              <X className="w-4 h-4" />
+              <span className="hidden sm:inline">Cancel</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Rate Limit */}
       {rateLimit && (
@@ -365,7 +467,15 @@ export default function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {pinnedReposList.map((repo) => (
-              <ProjectCard key={repo.id} repo={repo} isPinned={true} onTogglePin={togglePin} />
+              <ProjectCard 
+                key={repo.id} 
+                repo={repo} 
+                isPinned={true} 
+                onTogglePin={togglePin}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedRepos.has(repo.id)}
+                onToggleSelect={toggleSelection}
+              />
             ))}
           </div>
         </div>
@@ -383,7 +493,15 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {unpinnedReposList.map((repo) => (
-              <ProjectCard key={repo.id} repo={repo} isPinned={false} onTogglePin={togglePin} />
+              <ProjectCard 
+                key={repo.id} 
+                repo={repo} 
+                isPinned={false} 
+                onTogglePin={togglePin}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedRepos.has(repo.id)}
+                onToggleSelect={toggleSelection}
+              />
             ))}
           </div>
         )}

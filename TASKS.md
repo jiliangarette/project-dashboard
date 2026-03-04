@@ -11,7 +11,7 @@
 ### Features
 - [x] **Search across all projects** — Global search bar to find repos by name/description ✅
 - [ ] **Bulk actions** — Select multiple repos and perform batch operations
-- [x] **Task notes/comments** — Add timestamped notes to individual tasks with full CRUD ✅
+- [x] **Task notes/comments** — Add timestamped notes to individual tasks with full CRUD (backend fully integrated) ✅
 - [x] **Keyboard shortcuts** — Quick navigation: /, Esc, 1/2/3 for tabs, ? for help ✅
 - [x] **Dashboard analytics** — Charts showing language distribution, commit activity, repo stats ✅
 - [ ] **Export/import** — Export repo data as CSV or JSON for reporting

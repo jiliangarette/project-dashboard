@@ -48,31 +48,62 @@ interface ProjectCardProps {
   repo: GitHubRepo;
   isPinned: boolean;
   onTogglePin?: (repoId: number) => void;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (repoId: number) => void;
 }
 
-export const ProjectCard = memo(function ProjectCard({ repo, isPinned, onTogglePin }: ProjectCardProps) {
+export const ProjectCard = memo(function ProjectCard({ 
+  repo, 
+  isPinned, 
+  onTogglePin,
+  isSelectionMode = false,
+  isSelected = false,
+  onToggleSelect
+}: ProjectCardProps) {
   const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
 
   return (
-    <div className="relative bg-card-bg border border-card-border rounded-xl p-4 sm:p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group card-fade-in">
-      {/* Pin button */}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onTogglePin?.(repo.id);
-        }}
-        className={clsx(
-          "absolute top-2 right-2 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center",
-          isPinned
-            ? "text-accent bg-accent/10"
-            : "text-muted-fg hover:text-accent hover:bg-accent/5"
-        )}
-        title={isPinned ? "Unpin" : "Pin to top"}
-        aria-label={isPinned ? `Unpin ${repo.name}` : `Pin ${repo.name} to top`}
-      >
-        <Pin className={clsx("w-4 h-4", isPinned && "fill-accent")} />
-      </button>
+    <div className={clsx(
+      "relative bg-card-bg border border-card-border rounded-xl p-4 sm:p-5 hover:bg-card-hover hover:border-accent/30 hover:shadow-[0_0_16px_rgba(59,130,246,0.08)] transition-all group card-fade-in",
+      isSelected && "border-accent bg-accent/5"
+    )}>
+      {/* Selection checkbox (only in selection mode) */}
+      {isSelectionMode && (
+        <div className="absolute top-2 left-2 z-10">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.(repo.id);
+            }}
+            className="w-5 h-5 rounded border-card-border bg-input-bg text-accent focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+            aria-label={`Select ${repo.name}`}
+          />
+        </div>
+      )}
+
+      {/* Pin button (hidden in selection mode) */}
+      {!isSelectionMode && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onTogglePin?.(repo.id);
+          }}
+          className={clsx(
+            "absolute top-2 right-2 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center",
+            isPinned
+              ? "text-accent bg-accent/10"
+              : "text-muted-fg hover:text-accent hover:bg-accent/5"
+          )}
+          title={isPinned ? "Unpin" : "Pin to top"}
+          aria-label={isPinned ? `Unpin ${repo.name}` : `Pin ${repo.name} to top`}
+        >
+          <Pin className={clsx("w-4 h-4", isPinned && "fill-accent")} />
+        </button>
+      )}
 
       <Link href={`/project/${repo.owner.login}/${repo.name}`} prefetch={false}>
         <div>
