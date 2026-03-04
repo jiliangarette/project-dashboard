@@ -3,10 +3,11 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
-import { Search, Star, WifiOff, Clock, CheckSquare, Pin, X } from "lucide-react";
+import { Search, Star, WifiOff, Clock, CheckSquare, Pin, X, Download } from "lucide-react";
 import { clsx } from "clsx";
 import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
+import { exportReposAsCSV, exportReposAsJSON } from "@/lib/export";
 
 export default function DashboardPage() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -403,6 +404,36 @@ export default function DashboardPage() {
             <CheckSquare className="w-4 h-4" />
             <span className="hidden sm:inline">Select</span>
           </button>
+
+          <div className="relative group">
+            <button
+              className="px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground hover:bg-foreground/5 transition-colors min-h-[44px] text-sm flex items-center gap-2"
+              title="Export repositories"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+            <div className="absolute right-0 top-full mt-1 w-36 bg-card-bg border border-card-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+              <button
+                onClick={() => {
+                  exportReposAsCSV(filteredRepos);
+                  toast("success", "Exported as CSV");
+                }}
+                className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-foreground/5 transition-colors rounded-t-lg"
+              >
+                Export as CSV
+              </button>
+              <button
+                onClick={() => {
+                  exportReposAsJSON(filteredRepos);
+                  toast("success", "Exported as JSON");
+                }}
+                className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-foreground/5 transition-colors rounded-b-lg"
+              >
+                Export as JSON
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
