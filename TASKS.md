@@ -14,7 +14,7 @@
 - [x] **Task notes/comments** — Add timestamped notes to individual tasks with full CRUD (backend fully integrated) ✅
 - [x] **Keyboard shortcuts** — Quick navigation: /, Esc, 1/2/3 for tabs, ? for help ✅
 - [x] **Dashboard analytics** — Charts showing language distribution, commit activity, repo stats ✅
-- [ ] **Export/import** — Export repo data as CSV or JSON for reporting
+- [x] **Export/import** — Export repo data as CSV or JSON for reporting ✅
 - [ ] **Notification system** — Alert when repo changes are detected
 - [ ] **Project grouping/tags** — Group repos by topic/category
 
