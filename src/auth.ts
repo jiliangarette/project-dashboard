@@ -7,14 +7,17 @@ declare module "next-auth" {
   }
 }
 
+// Trim env vars to prevent trailing newline issues from Vercel dashboard
+const trimEnv = (key: string) => process.env[key]?.trim();
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  debug: true,
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
+  secret: trimEnv("AUTH_SECRET") || trimEnv("NEXTAUTH_SECRET"),
   trustHost: true,
   providers: [
     GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      clientId: trimEnv("GITHUB_CLIENT_ID"),
+      clientSecret: trimEnv("GITHUB_CLIENT_SECRET"),
       authorization: {
         params: {
           scope: "read:user user:email repo",
