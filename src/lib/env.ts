@@ -51,12 +51,12 @@ function validateEnv(): EnvConfig {
     errors.push('GITHUB_CLIENT_SECRET is required for GitHub OAuth');
   }
   
-  // Required: NextAuth
-  const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+  // Required: NextAuth (v5 uses AUTH_SECRET, fallback to NEXTAUTH_SECRET)
+  const nextAuthSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
   const nextAuthUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  
+
   if (!nextAuthSecret) {
-    errors.push('NEXTAUTH_SECRET is required (generate one with: openssl rand -base64 32)');
+    errors.push('AUTH_SECRET is required (generate one with: openssl rand -base64 32)');
   }
   
   // Optional: AI Providers (warn if none configured)
