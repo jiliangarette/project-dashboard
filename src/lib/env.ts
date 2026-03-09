@@ -80,10 +80,10 @@ function validateEnv(): EnvConfig {
     errors.push('NEXT_PUBLIC_SUPABASE_URL is required when NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is set');
   }
   
-  // Throw if any required variables are missing
+  // Log warnings for missing variables instead of crashing the server
   if (errors.length > 0) {
-    throw new Error(
-      `Missing required environment variables:\n${errors.map((e) => `  - ${e}`).join('\n')}\n\n` +
+    console.warn(
+      `⚠️  Missing environment variables:\n${errors.map((e) => `  - ${e}`).join('\n')}\n\n` +
       `See .env.example for required configuration.`
     );
   }

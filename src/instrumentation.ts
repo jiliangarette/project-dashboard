@@ -5,47 +5,58 @@
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    // Initialize Sentry for server-side
-    const Sentry = await import('@sentry/nextjs');
-    
-    Sentry.init({
-      dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
-      tracesSampleRate: 1.0,
-      debug: false,
-      
-      ignoreErrors: [
-        'ECONNREFUSED',
-        'ETIMEDOUT',
-        'API rate limit exceeded',
-      ],
-      
-      environment: process.env.NODE_ENV,
-      enabled: process.env.NODE_ENV === 'production' && !!(process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN),
-      
-      beforeSend(event) {
-        if (process.env.NODE_ENV !== 'production') {
-          return null;
-        }
-        return event;
-      },
-    });
-    
-    // Validate environment variables at startup
-    // This will throw and prevent server start if config is invalid
-    await import('./lib/env');
+    // Initialize Sentry for server-side (only if DSN is configured)
+    const sentryDsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+    if (sentryDsn) {
+      try {
+        const Sentry = await import('@sentry/nextjs');
+        Sentry.init({
+          dsn: sentryDsn,
+          tracesSampleRate: 1.0,
+          debug: false,
+          ignoreErrors: [
+            'ECONNREFUSED',
+            'ETIMEDOUT',
+            'API rate limit exceeded',
+          ],
+          environment: process.env.NODE_ENV,
+          enabled: process.env.NODE_ENV === 'production',
+          beforeSend(event) {
+            if (process.env.NODE_ENV !== 'production') {
+              return null;
+            }
+            return event;
+          },
+        });
+      } catch (e) {
+        console.warn('Sentry initialization failed:', e);
+      }
+    }
+
+    // Validate environment variables at startup (warns, doesn't crash)
+    try {
+      await import('./lib/env');
+    } catch (e) {
+      console.warn('Environment validation failed:', e);
+    }
   }
-  
+
   if (process.env.NEXT_RUNTIME === 'edge') {
-    // Initialize Sentry for edge runtime
-    const Sentry = await import('@sentry/nextjs');
-    
-    Sentry.init({
-      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-      tracesSampleRate: 1.0,
-      debug: false,
-      environment: process.env.NODE_ENV,
-      enabled: process.env.NODE_ENV === 'production' && !!process.env.NEXT_PUBLIC_SENTRY_DSN,
-    });
+    const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+    if (sentryDsn) {
+      try {
+        const Sentry = await import('@sentry/nextjs');
+        Sentry.init({
+          dsn: sentryDsn,
+          tracesSampleRate: 1.0,
+          debug: false,
+          environment: process.env.NODE_ENV,
+          enabled: process.env.NODE_ENV === 'production',
+        });
+      } catch (e) {
+        console.warn('Sentry edge initialization failed:', e);
+      }
+    }
   }
 }
 
@@ -62,16 +73,20 @@ export async function onRequestError(
     routeType: 'render' | 'route' | 'action' | 'middleware';
   }
 ) {
-  const Sentry = await import('@sentry/nextjs');
-  Sentry.captureException(err, {
-    contexts: {
-      nextjs: {
-        request: {
-          method: request.method,
-          url: request.url,
+  try {
+    const Sentry = await import('@sentry/nextjs');
+    Sentry.captureException(err, {
+      contexts: {
+        nextjs: {
+          request: {
+            method: request.method,
+            url: request.url,
+          },
+          router: context,
         },
-        router: context,
       },
-    },
-  });
+    });
+  } catch {
+    // Sentry not available, silently ignore
+  }
 }
