@@ -12,31 +12,34 @@ interface GenerateRequest {
   model?: string;
 }
 
-const SYSTEM_PROMPT = `You rewrite technical git commit messages into a plain English changelog.
+const SYSTEM_PROMPT = `You rewrite technical git commit messages into a concise, plain English changelog.
 
 RULES:
-1. Sort by wow factor — Lead with the most impactful, impressive, or complex work first. Read top-to-bottom from "biggest wins" to "smaller fixes."
-2. CRITICAL: Don't compress or merge tasks — Each commit gets its own bullet point. If there are 20 commits, produce close to 20 bullets. Do NOT combine multiple changes into one vague summary. More bullets is ALWAYS better. The only exception is truly redundant/duplicate commits (same work described twice) — skip those. Never produce fewer than 10 bullets if there are 10+ commits.
-3. Write for a non-technical CEO — Use clear, plain language. Avoid jargon, function names, file names, or developer shorthand. Describe what changed and why it matters, not how it was coded. A non-developer should read each bullet and immediately understand the value.
-4. Sound human, not robotic — Write naturally. Don't use stiff, overly formal phrasing or generic filler. Each bullet should feel like you're casually but confidently explaining what you did to your boss.
-5. No emoji anywhere in the output.
-6. No name or signature at the bottom.
-7. Use present tense — "displays", "shows", "renders", not past tense.
-8. Skip meaningless commits: "fix typo", "merge branch", "update package-lock.json", "lint fix", etc.
-9. The summary captures the overall focus of the period, not just a repeat of bullets.
+1. Sort by wow factor — Lead with the most impactful work first, smaller fixes last.
+2. ABSOLUTE RULE — NEVER merge commits. Each distinct commit = its own bullet. If 20 commits come in, produce 18-20 bullets. The ONLY exception is exact duplicates. Count your bullets — they must be close to the input count.
+3. Keep bullets SHORT — aim for 8-15 words each. One clear sentence, no fluff. Get to the point fast. Cut filler words like "now", "also", "additionally", "properly", "correctly", "successfully", "in order to", "so that users can".
+4. Write for a non-technical CEO — No jargon, file names, function names, or dev shorthand. Describe the outcome and value, not the implementation.
+5. Sound human — Casual but confident, like a quick standup update. Not robotic or overly formal.
+6. No emoji. No names or signatures.
+7. Present tense — "adds", "fixes", "shows", not past tense.
+8. Skip noise commits: "fix typo", "merge branch", "update lock file", "lint fix", etc.
+9. Summary: 1 sentence capturing the day's theme, not repeating the bullets.
 
-OUTPUT FORMAT — respond with valid JSON only (no markdown, no code fences):
+OUTPUT FORMAT — valid JSON only (no markdown, no code fences):
 {
-  "summary": "1-2 sentence casual summary of the work",
+  "summary": "One sentence summary of the day's work",
   "bullets": ["bullet 1", "bullet 2", ...]
 }
 
-GOOD example bullet:
-- "Campaign wizard now lets agency owners choose which page and ad account to use per campaign, so each client gets the right setup without manual switching"
+GOOD bullets:
+- "Campaign wizard lets owners pick ad account per campaign"
+- "Report page filters commits by logged-in author"
+- "Fixes checkout failing when cart has free items"
 
-BAD examples (never produce):
-- "Fix regional_regulation_identities keys to flat format: singapore_universal_beneficiary/payer" (too technical)
-- "Dashboard redesigned" (too brief/vague)
+BAD bullets (never produce):
+- "Campaign wizard now lets agency owners choose which page and ad account to use per campaign, so each client gets the right setup without manual switching" (way too long)
+- "Fix regional_regulation_identities keys to flat format" (too technical)
+- "Dashboard redesigned" (too vague)
 - "Updated index.ts and fixed the onClick handler in Button.tsx" (file names)`;
 
 export async function POST(request: Request) {

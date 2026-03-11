@@ -21,6 +21,9 @@ export function Header() {
     setMounted(true);
   }, []);
 
+  // Hide header on login page for immersive experience
+  if (pathname === "/login") return null;
+
   return (
     <header className="border-b border-card-border bg-card-bg/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-4">
@@ -41,6 +44,16 @@ export function Header() {
             {...(isHome ? { "aria-current": "page" as const } : {})}
           >
             Projects
+          </Link>
+          <Link
+            href="/report"
+            className={clsx(
+              "px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center",
+              pathname === "/report" ? "text-foreground bg-foreground/5" : "text-muted-fg hover:text-foreground"
+            )}
+            {...(pathname === "/report" ? { "aria-current": "page" as const } : {})}
+          >
+            Report
           </Link>
           <Link
             href="/settings"
@@ -115,6 +128,17 @@ export function Header() {
             {...(isHome ? { "aria-current": "page" as const } : {})}
           >
             Projects
+          </Link>
+          <Link
+            href="/report"
+            onClick={() => setMobileOpen(false)}
+            className={clsx(
+              "block px-3 py-3 rounded-lg transition-colors min-h-[44px]",
+              pathname === "/report" ? "text-foreground bg-foreground/5" : "text-muted-fg hover:text-foreground"
+            )}
+            {...(pathname === "/report" ? { "aria-current": "page" as const } : {})}
+          >
+            Report
           </Link>
           <Link
             href="/settings"

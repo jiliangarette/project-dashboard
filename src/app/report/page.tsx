@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { loadRepoAliases } from "@/lib/aliases";
+import { fetchAliases } from "@/lib/aliases";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
 
@@ -287,6 +287,7 @@ export default function ReportPage() {
   const [reports, setReports] = useState<ProjectReport[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(true);
+  const [authorFilter, setAuthorFilter] = useState<"me" | "all">("me");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -302,7 +303,7 @@ export default function ReportPage() {
         if (!res.ok) throw new Error("Failed to load repos");
         const data = await res.json();
         setRepos(data.repos || []);
-        setAliases(loadRepoAliases());
+        setAliases(await fetchAliases());
       } catch {
         // silent
       } finally {
@@ -380,15 +381,25 @@ export default function ReportPage() {
         // Filter to today's commits only (EOD report)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayCommits = commits.filter(
+        let todayCommits = commits.filter(
           (c: { commit: { author: { date: string } } }) =>
             new Date(c.commit.author.date) >= today
         );
 
+        // Filter by author if "Only me" is selected
+        if (authorFilter === "me" && session?.githubUsername) {
+          const username = session.githubUsername.toLowerCase();
+          todayCommits = todayCommits.filter(
+            (c: { author?: { login?: string }; commit: { author: { name?: string } } }) =>
+              c.author?.login?.toLowerCase() === username ||
+              c.commit.author.name?.toLowerCase() === session?.user?.name?.toLowerCase()
+          );
+        }
+
         if (todayCommits.length === 0) {
           setReports((prev) =>
             prev.map((r, idx) =>
-              idx === i ? { ...r, status: "done", summary: "No commits found today.", bullets: [] } : r
+              idx === i ? { ...r, status: "done", summary: authorFilter === "me" ? "No commits by you today." : "No commits found today.", bullets: [] } : r
             )
           );
           continue;
@@ -482,6 +493,33 @@ export default function ReportPage() {
             onToggle={toggleProject}
             aliases={aliases}
           />
+
+          {/* Author filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-zinc-400">Commits by:</span>
+            <div className="inline-flex rounded-lg border border-white/[0.08] overflow-hidden">
+              <button
+                onClick={() => setAuthorFilter("me")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                  authorFilter === "me"
+                    ? "bg-indigo-500/20 text-indigo-300 border-r border-indigo-500/30"
+                    : "text-zinc-400 hover:bg-white/[0.04] border-r border-white/[0.08]"
+                }`}
+              >
+                Only me
+              </button>
+              <button
+                onClick={() => setAuthorFilter("all")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                  authorFilter === "all"
+                    ? "bg-indigo-500/20 text-indigo-300"
+                    : "text-zinc-400 hover:bg-white/[0.04]"
+                }`}
+              >
+                All authors
+              </button>
+            </div>
+          </div>
 
           <div className="flex items-center gap-3">
             <button

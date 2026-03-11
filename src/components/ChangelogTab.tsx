@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { RefreshCw, Sparkles, Calendar, AlertCircle, ChevronDown, GitCommit, Users } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { RefreshCw, Sparkles, Calendar, AlertCircle, ChevronDown, GitCommit, Users, Copy, Check } from "lucide-react";
 import { clsx } from "clsx";
 import { toast } from "@/components/Toast";
 import { ChangelogSkeleton } from "@/components/ChangelogSkeleton";
@@ -18,6 +18,7 @@ type ViewMode = "daily" | "weekly" | "monthly";
 interface ChangelogTabProps {
   owner: string;
   repo: string;
+  displayName?: string;
 }
 
 function getProviderSettings() {
@@ -56,6 +57,7 @@ function filterByAuthor(days: DayCommits[], author: string): DayCommits[] {
 // ── Day Dropdown (for daily view) ──────────────────────────────
 
 function DayDropdown({
+  projectName,
   day,
   changelog,
   isGenerating,
@@ -63,6 +65,7 @@ function DayDropdown({
   onGenerate,
   defaultOpen,
 }: {
+  projectName: string;
   day: DayCommits;
   changelog?: GeneratedChangelog;
   isGenerating: boolean;
@@ -80,7 +83,7 @@ function DayDropdown({
   });
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden">
+    <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden select-none">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-4 sm:px-6 hover:bg-foreground/[0.02] transition-colors text-left"
@@ -100,7 +103,7 @@ function DayDropdown({
 
       {expanded && (
         <div className="border-t border-card-border">
-          <SummarySection changelog={changelog} isGenerating={isGenerating} hasFailed={hasFailed} onGenerate={onGenerate} />
+          <SummarySection projectName={projectName} changelog={changelog} isGenerating={isGenerating} hasFailed={hasFailed} onGenerate={onGenerate} />
           <CommitsList commits={day.commits} />
         </div>
       )}
@@ -111,6 +114,7 @@ function DayDropdown({
 // ── Combined Period View (weekly / monthly) ────────────────────
 
 function CombinedPeriodView({
+  projectName,
   label,
   days,
   allCommits,
@@ -119,6 +123,7 @@ function CombinedPeriodView({
   hasFailed,
   onGenerate,
 }: {
+  projectName: string;
   label: string;
   days: DayCommits[];
   allCommits: DayCommits["commits"];
@@ -138,7 +143,7 @@ function CombinedPeriodView({
   }
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden">
+    <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden select-none">
       <div className="p-4 sm:px-6 sm:py-5">
         <div className="flex items-center gap-3 mb-1">
           <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
@@ -150,7 +155,7 @@ function CombinedPeriodView({
       </div>
 
       <div className="border-t border-card-border">
-        <SummarySection changelog={changelog} isGenerating={isGenerating} hasFailed={hasFailed} onGenerate={onGenerate} />
+        <SummarySection projectName={projectName} changelog={changelog} isGenerating={isGenerating} hasFailed={hasFailed} onGenerate={onGenerate} />
       </div>
 
       <div className="border-t border-card-border/50 bg-foreground/[0.015]">
@@ -168,7 +173,7 @@ function CombinedPeriodView({
         </button>
 
         {showCommits && (
-          <div className="px-4 sm:px-6 pb-4 max-h-96 overflow-y-auto">
+          <div className="px-4 sm:px-6 pb-4 max-h-96 overflow-y-auto select-text">
             {days.map((day) => {
               const d = new Date(day.date + "T00:00:00");
               const dayLabel = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
@@ -198,16 +203,40 @@ function CombinedPeriodView({
 // ── Shared components ──────────────────────────────────────────
 
 function SummarySection({
+  projectName,
   changelog,
   isGenerating,
   hasFailed,
   onGenerate,
 }: {
+  projectName: string;
   changelog?: GeneratedChangelog;
   isGenerating: boolean;
   hasFailed: boolean;
   onGenerate: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    if (!changelog) return;
+    const lines: string[] = [];
+    lines.push(`# ${projectName}`);
+    lines.push(``);
+    lines.push(`**AI Summary**`);
+    lines.push(``);
+    lines.push(changelog.summary);
+    if (changelog.bullets.length > 0) {
+      lines.push(``);
+      for (const bullet of changelog.bullets) {
+        lines.push(`- ${bullet}`);
+      }
+    }
+    navigator.clipboard.writeText(lines.join("\n")).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [changelog, projectName]);
+
   return (
     <div className="p-4 sm:px-6 sm:py-5">
       {isGenerating ? (
@@ -220,19 +249,29 @@ function SummarySection({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-accent" />
-              <span className="text-xs font-medium text-accent uppercase tracking-wide">AI Summary</span>
+              <span className="text-xs font-medium text-accent uppercase tracking-wide select-text">AI Summary</span>
             </div>
-            <button
-              onClick={onGenerate}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-fg hover:text-foreground hover:bg-foreground/5 transition-colors"
-            >
-              <RefreshCw className="w-3 h-3" />
-              Redo
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-fg hover:text-foreground hover:bg-foreground/5 transition-colors"
+                title="Copy as Markdown"
+              >
+                {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+              <button
+                onClick={onGenerate}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-fg hover:text-foreground hover:bg-foreground/5 transition-colors"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Redo
+              </button>
+            </div>
           </div>
-          <p className="text-foreground/90 italic mb-3 text-sm leading-relaxed break-words">{changelog.summary}</p>
+          <p className="text-foreground/90 italic mb-3 text-sm leading-relaxed break-words select-text">{changelog.summary}</p>
           {changelog.bullets.length > 0 && (
-            <ul className="space-y-2">
+            <ul className="space-y-2 select-text">
               {changelog.bullets.map((bullet, i) => (
                 <li key={i} className="flex gap-2 text-sm text-muted-fg leading-relaxed">
                   <span className="text-accent mt-0.5 flex-shrink-0">--</span>
@@ -274,7 +313,7 @@ function CommitsList({ commits }: { commits: DayCommits["commits"] }) {
         <GitCommit className="w-3.5 h-3.5 text-muted-fg" />
         <span className="text-xs font-medium text-muted-fg uppercase tracking-wide">Commits</span>
       </div>
-      <ul className="space-y-1.5 max-h-64 overflow-y-auto">
+      <ul className="space-y-1.5 max-h-64 overflow-y-auto select-text">
         {commits.map((commit) => (
           <li key={commit.sha} className="flex items-start gap-2 text-xs text-muted-fg group">
             <code className="text-[10px] text-accent/60 font-mono mt-0.5 flex-shrink-0 group-hover:text-accent transition-colors">
@@ -290,7 +329,7 @@ function CommitsList({ commits }: { commits: DayCommits["commits"] }) {
 
 // ── Main Component ─────────────────────────────────────────────
 
-export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
+export function ChangelogTab({ owner, repo, displayName }: ChangelogTabProps) {
   const [allDayGroups, setAllDayGroups] = useState<DayCommits[]>([]);
   const [changelogs, setChangelogs] = useState<Map<string, GeneratedChangelog>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -481,7 +520,7 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Controls */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 select-none">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* View mode toggle */}
           <div className="flex items-center bg-card-bg border border-card-border rounded-lg p-1">
@@ -507,7 +546,7 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
                 <select
                   value={authorFilter}
                   onChange={(e) => setAuthorFilter(e.target.value)}
-                  className="pl-9 pr-4 py-2 rounded-lg border border-card-border bg-card-bg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[40px] appearance-none"
+                  className="pl-9 pr-4 py-2 rounded-lg border border-card-border bg-card-bg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[40px] appearance-none select-none"
                   aria-label="Filter by contributor"
                 >
                   <option value="">All contributors ({authors.length})</option>
@@ -563,6 +602,7 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
             dayGroups.map((day, i) => (
               <DayDropdown
                 key={day.date + authorSuffix}
+                projectName={displayName || repo}
                 day={day}
                 changelog={changelogs.get(dayCacheKey(day.date))}
                 isGenerating={generating.has(dayCacheKey(day.date))}
@@ -577,6 +617,7 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
 
       {viewMode === "weekly" && (
         <CombinedPeriodView
+          projectName={displayName || repo}
           label={authorFilter ? `Last 7 Days — ${authorFilter}` : "Last 7 Days"}
           days={last7Days}
           allCommits={allCommits7}
@@ -589,6 +630,7 @@ export function ChangelogTab({ owner, repo }: ChangelogTabProps) {
 
       {viewMode === "monthly" && (
         <CombinedPeriodView
+          projectName={displayName || repo}
           label={authorFilter ? `Last 30 Days — ${authorFilter}` : "Last 30 Days"}
           days={last30Days}
           allCommits={allCommits30}

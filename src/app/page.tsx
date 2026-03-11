@@ -5,12 +5,12 @@ import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Search, Star, WifiOff, Clock, CheckSquare, Pin, X, Download } from "lucide-react";
 import { clsx } from "clsx";
-import { LanguageChart } from "@/components/LanguageChart";
 import { toast } from "@/components/Toast";
 import { exportReposAsCSV, exportReposAsJSON } from "@/lib/export";
 import { MobileOptimizedFilters } from "@/components/MobileOptimizedFilters";
 import { DashboardLoadingSkeleton } from "@/components/ProjectCardSkeleton";
 import { loadRepoTags, getAllUniqueTags, type RepoTags } from "@/lib/tags";
+import { fetchAliases, saveAlias, type RepoAliases } from "@/lib/aliases";
 
 export default function DashboardPage() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -29,6 +29,8 @@ export default function DashboardPage() {
   const [selectedRepos, setSelectedRepos] = useState<Set<number>>(new Set());
   const [repoTags, setRepoTags] = useState<RepoTags>({});
   const [tagFilter, setTagFilter] = useState<string>("");
+  const [repoAliases, setRepoAliases] = useState<RepoAliases>({});
+  const [pinnedLoaded, setPinnedLoaded] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +87,11 @@ export default function DashboardPage() {
   // Load tags from localStorage
   useEffect(() => {
     setRepoTags(loadRepoTags());
+  }, []);
+
+  // Load aliases from server
+  useEffect(() => {
+    fetchAliases().then(setRepoAliases);
   }, []);
 
   // Save pinned repos to localStorage
@@ -163,9 +170,11 @@ export default function DashboardPage() {
     }
 
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter((repo) =>
-        repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        repo.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        repo.name.toLowerCase().includes(q) ||
+        repo.description?.toLowerCase().includes(q) ||
+        repoAliases[repo.id]?.toLowerCase().includes(q)
       );
     }
 
@@ -197,7 +206,7 @@ export default function DashboardPage() {
     });
 
     return filtered;
-  }, [repos, searchQuery, languageFilter, sortBy, activityFilter, tagFilter, repoTags]);
+  }, [repos, searchQuery, languageFilter, sortBy, activityFilter, tagFilter, repoTags, repoAliases]);
 
   // Separate pinned and unpinned
   const pinnedReposList = filteredRepos.filter((repo) => pinnedRepos.has(repo.id));
@@ -269,8 +278,12 @@ export default function DashboardPage() {
   };
 
   const handleTagsChange = () => {
-    // Reload tags from localStorage when they change
     setRepoTags(loadRepoTags());
+  };
+
+  const handleAliasChange = async (repoId: number, alias: string) => {
+    const updated = await saveAlias(repoId, alias);
+    setRepoAliases(updated);
   };
 
   if (loading) {
@@ -351,9 +364,6 @@ export default function DashboardPage() {
           <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalIssues}</div>
         </div>
       </div>
-
-      {/* Language Distribution */}
-      <LanguageChart repos={repos} />
 
       {/* Filters and Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -497,16 +507,18 @@ export default function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {pinnedReposList.map((repo) => (
-              <ProjectCard 
-                key={repo.id} 
-                repo={repo} 
-                isPinned={true} 
+              <ProjectCard
+                key={repo.id}
+                repo={repo}
+                isPinned={true}
                 onTogglePin={togglePin}
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedRepos.has(repo.id)}
                 onToggleSelect={toggleSelection}
                 tags={repoTags[repo.id] || []}
                 onTagsChange={handleTagsChange}
+                alias={repoAliases[repo.id] || null}
+                onAliasChange={handleAliasChange}
               />
             ))}
           </div>
@@ -525,16 +537,18 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {unpinnedReposList.map((repo) => (
-              <ProjectCard 
-                key={repo.id} 
-                repo={repo} 
-                isPinned={false} 
+              <ProjectCard
+                key={repo.id}
+                repo={repo}
+                isPinned={false}
                 onTogglePin={togglePin}
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedRepos.has(repo.id)}
                 onToggleSelect={toggleSelection}
                 tags={repoTags[repo.id] || []}
                 onTagsChange={handleTagsChange}
+                alias={repoAliases[repo.id] || null}
+                onAliasChange={handleAliasChange}
               />
             ))}
           </div>

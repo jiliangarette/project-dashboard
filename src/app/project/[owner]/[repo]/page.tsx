@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ExternalLink, Star, GitFork, AlertCircle, Calendar, WifiOff } from "lucide-react";
+import { ArrowLeft, ExternalLink, Star, GitFork, AlertCircle, Calendar, WifiOff, Pencil, Check, X } from "lucide-react";
+import { fetchAliases, saveAlias } from "@/lib/aliases";
 import { clsx } from "clsx";
 import { GitHubRepo } from "@/lib/github";
 import { ChangelogTab } from "@/components/ChangelogTab";
@@ -45,6 +46,10 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("changelog");
+  const [alias, setAlias] = useState<string | null>(null);
+  const [isEditingAlias, setIsEditingAlias] = useState(false);
+  const [editAliasValue, setEditAliasValue] = useState("");
+  const aliasInputRef = useRef<HTMLInputElement>(null);
 
   // Keyboard shortcuts for tab switching
   useEffect(() => {
@@ -102,6 +107,33 @@ export default function ProjectDetailPage() {
     loadRepo();
   }, [owner, repo]);
 
+  // Load alias when repo data is available
+  useEffect(() => {
+    if (repoData) {
+      fetchAliases().then((aliases) => {
+        setAlias(aliases[repoData.id] || null);
+      });
+    }
+  }, [repoData]);
+
+  useEffect(() => {
+    if (isEditingAlias) aliasInputRef.current?.focus();
+  }, [isEditingAlias]);
+
+  const handleSaveAlias = async () => {
+    if (repoData) {
+      const trimmed = editAliasValue.trim();
+      await saveAlias(repoData.id, trimmed);
+      setAlias(trimmed || null);
+    }
+    setIsEditingAlias(false);
+  };
+
+  const handleCancelAlias = () => {
+    setEditAliasValue(alias || "");
+    setIsEditingAlias(false);
+  };
+
   const languageColor = repoData?.language
     ? languageColors[repoData.language] || "#8b949e"
     : "#8b949e";
@@ -149,7 +181,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 select-none">
       {/* Back button */}
       <button
         onClick={() => router.push("/")}
@@ -164,7 +196,47 @@ export default function ProjectDetailPage() {
       <div className="bg-card-bg border border-card-border rounded-xl p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-2 break-words">{repoData.name}</h1>
+            {isEditingAlias ? (
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  ref={aliasInputRef}
+                  type="text"
+                  value={editAliasValue}
+                  onChange={(e) => setEditAliasValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveAlias();
+                    if (e.key === "Escape") handleCancelAlias();
+                  }}
+                  className="flex-1 px-3 py-2 rounded-lg border border-accent/50 bg-input-bg text-foreground text-xl sm:text-3xl font-bold focus:outline-none focus:ring-2 focus:ring-accent"
+                  placeholder={repoData.name}
+                />
+                <button onClick={handleSaveAlias} className="p-2 text-green-400 hover:text-green-300">
+                  <Check className="w-5 h-5" />
+                </button>
+                <button onClick={handleCancelAlias} className="p-2 text-red-400 hover:text-red-300">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-xl sm:text-3xl font-bold text-foreground break-words select-text">
+                  {alias || repoData.name}
+                </h1>
+                <button
+                  onClick={() => {
+                    setEditAliasValue(alias || "");
+                    setIsEditingAlias(true);
+                  }}
+                  className="p-1.5 text-muted-fg hover:text-accent transition-colors flex-shrink-0"
+                  title="Rename project"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {alias && (
+              <p className="text-xs text-muted-fg mb-1">{repoData.name}</p>
+            )}
             {repoData.description && (
               <p className="text-muted-fg text-sm sm:text-base break-words">{repoData.description}</p>
             )}
@@ -262,8 +334,8 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Tab content */}
-      <div className="min-h-[400px]">
-        {activeTab === "changelog" && <div id="tabpanel-changelog" role="tabpanel"><ChangelogTab owner={owner} repo={repo} /></div>}
+      <div className="min-h-[400px] select-text">
+        {activeTab === "changelog" && <div id="tabpanel-changelog" role="tabpanel"><ChangelogTab owner={owner} repo={repo} displayName={alias || repoData?.name || repo} /></div>}
         {activeTab === "tasks" && <div id="tabpanel-tasks" role="tabpanel"><TasksTab owner={owner} repo={repo} /></div>}
         {activeTab === "readme" && <div id="tabpanel-readme" role="tabpanel"><ReadmeTab owner={owner} repo={repo} /></div>}
       </div>

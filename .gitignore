@@ -44,3 +44,8 @@ next-env.d.ts
 
 # task data (auto-generated per project)
 tasks.json
+
+# persistent app data
+/data/
+
+.vercel

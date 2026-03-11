@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Star, GitFork, AlertCircle, Pin } from "lucide-react";
+import { Star, GitFork, AlertCircle, Pin, Pencil, Check, X } from "lucide-react";
 import { clsx } from "clsx";
 import type { GitHubRepo } from "@/lib/github";
 import { TagManager } from "./TagManager";
@@ -55,29 +55,52 @@ interface ProjectCardProps {
   onToggleSelect?: (repoId: number) => void;
   tags?: string[];
   onTagsChange?: () => void;
+  alias?: string | null;
+  onAliasChange?: (repoId: number, alias: string) => void;
 }
 
-export const ProjectCard = memo(function ProjectCard({ 
-  repo, 
-  isPinned, 
+export const ProjectCard = memo(function ProjectCard({
+  repo,
+  isPinned,
   onTogglePin,
   isSelectionMode = false,
   isSelected = false,
   onToggleSelect,
   tags = [],
-  onTagsChange
+  onTagsChange,
+  alias,
+  onAliasChange
 }: ProjectCardProps) {
   const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(alias || "");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing) inputRef.current?.focus();
+  }, [isEditing]);
+
+  const handleSaveAlias = () => {
+    onAliasChange?.(repo.id, editValue.trim());
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditValue(alias || "");
+    setIsEditing(false);
+  };
+
   const handleAddTag = (tag: string) => {
     addRepoTag(repo.id, tag);
     onTagsChange?.();
   };
-  
+
   const handleRemoveTag = (tag: string) => {
     removeRepoTag(repo.id, tag);
     onTagsChange?.();
   };
+
+  const displayName = alias || repo.name;
 
   return (
     <div className={clsx(
@@ -124,7 +147,50 @@ export const ProjectCard = memo(function ProjectCard({
       <Link href={`/project/${repo.owner.login}/${repo.name}`} prefetch={false}>
         <div>
           {/* Repo name */}
-          <h3 className="font-semibold text-foreground mb-2 pr-8">{repo.name}</h3>
+          {isEditing ? (
+            <div
+              className="flex items-center gap-1.5 mb-2 pr-8"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            >
+              <input
+                ref={inputRef}
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveAlias();
+                  if (e.key === "Escape") handleCancelEdit();
+                }}
+                className="flex-1 px-2 py-1 rounded border border-accent/50 bg-input-bg text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                placeholder={repo.name}
+              />
+              <button onClick={handleSaveAlias} className="p-1 text-green-400 hover:text-green-300">
+                <Check className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={handleCancelEdit} className="p-1 text-red-400 hover:text-red-300">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 mb-1 pr-8 group/name">
+              <h3 className="font-semibold text-foreground">{displayName}</h3>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setEditValue(alias || "");
+                  setIsEditing(true);
+                }}
+                className="p-1 text-muted-fg opacity-0 group-hover/name:opacity-100 hover:text-accent transition-all"
+                title="Rename project"
+              >
+                <Pencil className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+          {alias && (
+            <p className="text-xs text-muted-fg mb-1">{repo.name}</p>
+          )}
 
           {/* Description */}
           <p className="text-sm text-muted-fg mb-4 line-clamp-2 min-h-[2.5rem]">

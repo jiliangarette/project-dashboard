@@ -4,6 +4,7 @@ import GitHub from "next-auth/providers/github";
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
+    githubUsername?: string;
   }
 }
 
@@ -26,15 +27,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, profile }) {
       if (account?.access_token) {
         token.accessToken = account.access_token;
+      }
+      if (profile?.login) {
+        token.githubUsername = profile.login as string;
       }
       return token;
     },
     async session({ session, token }) {
       if (token.accessToken) {
         session.accessToken = token.accessToken as string;
+      }
+      if (token.githubUsername) {
+        session.githubUsername = token.githubUsername as string;
       }
       return session;
     },
