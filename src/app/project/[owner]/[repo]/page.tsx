@@ -123,8 +123,8 @@ export default function ProjectDetailPage() {
   const handleSaveAlias = async () => {
     if (repoData) {
       const trimmed = editAliasValue.trim();
-      await saveAlias(repoData.id, trimmed);
-      setAlias(trimmed || null);
+      const updated = await saveAlias(repoData.id, trimmed);
+      setAlias(updated[repoData.id] || null);
     }
     setIsEditingAlias(false);
   };
