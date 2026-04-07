@@ -515,8 +515,6 @@ export default function DashboardPage() {
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedRepos.has(repo.id)}
                 onToggleSelect={toggleSelection}
-                tags={repoTags[repo.id] || []}
-                onTagsChange={handleTagsChange}
                 alias={repoAliases[repo.id] || null}
                 onAliasChange={handleAliasChange}
               />
@@ -545,8 +543,6 @@ export default function DashboardPage() {
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedRepos.has(repo.id)}
                 onToggleSelect={toggleSelection}
-                tags={repoTags[repo.id] || []}
-                onTagsChange={handleTagsChange}
                 alias={repoAliases[repo.id] || null}
                 onAliasChange={handleAliasChange}
               />

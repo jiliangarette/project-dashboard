@@ -2,34 +2,9 @@
 
 import { memo, useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Star, GitFork, AlertCircle, Pin, Pencil, Check, X } from "lucide-react";
+import { Pin, Pencil, Check, X } from "lucide-react";
 import { clsx } from "clsx";
 import type { GitHubRepo } from "@/lib/github";
-import { TagManager } from "./TagManager";
-import { addRepoTag, removeRepoTag } from "@/lib/tags";
-
-// Language colors matching GitHub's
-const languageColors: Record<string, string> = {
-  TypeScript: "#3178c6",
-  JavaScript: "#f1e05a",
-  Python: "#3572A5",
-  Java: "#b07219",
-  Go: "#00ADD8",
-  Rust: "#dea584",
-  Ruby: "#701516",
-  PHP: "#4F5D95",
-  C: "#555555",
-  "C++": "#f34b7d",
-  "C#": "#178600",
-  Swift: "#F05138",
-  Kotlin: "#A97BFF",
-  Dart: "#00B4AB",
-  Vue: "#41b883",
-  HTML: "#e34c26",
-  CSS: "#563d7c",
-  Shell: "#89e051",
-  Lua: "#000080",
-};
 
 function timeAgo(dateStr: string): string {
   const date = new Date(dateStr);
@@ -53,8 +28,6 @@ interface ProjectCardProps {
   isSelectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (repoId: number) => void;
-  tags?: string[];
-  onTagsChange?: () => void;
   alias?: string | null;
   onAliasChange?: (repoId: number, alias: string) => void;
 }
@@ -66,12 +39,9 @@ export const ProjectCard = memo(function ProjectCard({
   isSelectionMode = false,
   isSelected = false,
   onToggleSelect,
-  tags = [],
-  onTagsChange,
   alias,
   onAliasChange
 }: ProjectCardProps) {
-  const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(alias || "");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,16 +58,6 @@ export const ProjectCard = memo(function ProjectCard({
   const handleCancelEdit = () => {
     setEditValue(alias || "");
     setIsEditing(false);
-  };
-
-  const handleAddTag = (tag: string) => {
-    addRepoTag(repo.id, tag);
-    onTagsChange?.();
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    removeRepoTag(repo.id, tag);
-    onTagsChange?.();
   };
 
   const displayName = alias || repo.name;
@@ -196,48 +156,6 @@ export const ProjectCard = memo(function ProjectCard({
           <p className="text-sm text-muted-fg mb-4 line-clamp-2 min-h-[2.5rem]">
             {repo.description || "No description"}
           </p>
-
-          {/* Stats row */}
-          <div className="flex items-center gap-4 text-xs text-muted-fg mb-3">
-            {repo.language && (
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: languageColor }}
-                />
-                <span>{repo.language}</span>
-              </div>
-            )}
-            {repo.stargazers_count > 0 && (
-              <div className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5" />
-                <span>{repo.stargazers_count}</span>
-              </div>
-            )}
-            {repo.forks_count > 0 && (
-              <div className="flex items-center gap-1">
-                <GitFork className="w-3.5 h-3.5" />
-                <span>{repo.forks_count}</span>
-              </div>
-            )}
-            {repo.open_issues_count > 0 && (
-              <div className="flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{repo.open_issues_count}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Tags */}
-          {(tags.length > 0 || !isSelectionMode) && (
-            <div className="mb-3">
-              <TagManager
-                tags={tags}
-                onAddTag={handleAddTag}
-                onRemoveTag={handleRemoveTag}
-              />
-            </div>
-          )}
 
           {/* Last updated */}
           <div className="text-xs text-muted">Updated {timeAgo(repo.updated_at)}</div>
