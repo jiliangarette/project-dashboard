@@ -44,6 +44,148 @@ const yesterdayISO = () => {
   return toISODate(d);
 };
 
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+/* ─── Date picker popover ───────────────────────────────────────────── */
+
+function DatePicker({ value, onChange }: { value: string; onChange: (iso: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [view, setView] = useState(() => new Date(value + "T00:00:00"));
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) setView(new Date(value + "T00:00:00"));
+  }, [open, value]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const today = todayISO();
+  const yesterday = yesterdayISO();
+
+  const year = view.getFullYear();
+  const month = view.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: (string | null)[] = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(toISODate(new Date(year, month, d)));
+
+  const select = (iso: string) => {
+    onChange(iso);
+    setOpen(false);
+  };
+
+  const presets = [
+    { label: "Today", iso: today },
+    { label: "Yesterday", iso: yesterday },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-zinc-200 transition-colors hover:border-white/[0.12] focus:border-indigo-500/50 outline-none"
+      >
+        <svg className="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        {value === today ? "Today" : value === yesterday ? "Yesterday" : formatDateLabel(value)}
+        <svg className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-2 left-0 rounded-xl border border-white/[0.08] bg-[#111113] shadow-2xl shadow-black/50 p-3 w-[300px] animate-[fadeSlideDown_0.15s_ease-out]">
+          {/* Presets */}
+          <div className="flex gap-2 mb-3">
+            {presets.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => select(p.iso)}
+                className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                  value === p.iso
+                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"
+                    : "text-zinc-400 border-white/[0.08] hover:bg-white/[0.04]"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Month nav */}
+          <div className="flex items-center justify-between mb-2 px-1">
+            <button
+              onClick={() => setView(new Date(year, month - 1, 1))}
+              className="p-1.5 rounded-lg text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span className="text-sm font-semibold text-white">
+              {view.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            </span>
+            <button
+              onClick={() => setView(new Date(year, month + 1, 1))}
+              className="p-1.5 rounded-lg text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {WEEKDAYS.map((w) => (
+              <div key={w} className="text-center text-xs font-medium text-zinc-600 py-1">{w}</div>
+            ))}
+          </div>
+
+          {/* Days */}
+          <div className="grid grid-cols-7 gap-1">
+            {cells.map((iso, i) => {
+              if (!iso) return <div key={i} />;
+              const isFuture = iso > today;
+              const isSelected = iso === value;
+              const isToday = iso === today;
+              return (
+                <button
+                  key={i}
+                  disabled={isFuture}
+                  onClick={() => select(iso)}
+                  className={`h-9 rounded-lg text-sm transition-colors ${
+                    isSelected
+                      ? "bg-indigo-500 text-white font-semibold"
+                      : isFuture
+                      ? "text-zinc-700 cursor-not-allowed"
+                      : isToday
+                      ? "text-indigo-300 hover:bg-white/[0.06]"
+                      : "text-zinc-300 hover:bg-white/[0.06]"
+                  }`}
+                >
+                  {Number(iso.slice(8))}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Multi-select combobox ─────────────────────────────────────────── */
 
 function ProjectSelector({
@@ -506,35 +648,7 @@ export default function ReportPage() {
           {/* Date filter */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-zinc-400">Date:</span>
-            <div className="inline-flex rounded-lg border border-white/[0.08] overflow-hidden">
-              <button
-                onClick={() => setDateISO(todayISO())}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors border-r ${
-                  dateISO === todayISO()
-                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"
-                    : "text-zinc-400 hover:bg-white/[0.04] border-white/[0.08]"
-                }`}
-              >
-                Today
-              </button>
-              <button
-                onClick={() => setDateISO(yesterdayISO())}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                  dateISO === yesterdayISO()
-                    ? "bg-indigo-500/20 text-indigo-300"
-                    : "text-zinc-400 hover:bg-white/[0.04]"
-                }`}
-              >
-                Yesterday
-              </button>
-            </div>
-            <input
-              type="date"
-              value={dateISO}
-              max={todayISO()}
-              onChange={(e) => e.target.value && setDateISO(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-zinc-300 outline-none transition-colors hover:border-white/[0.12] focus:border-indigo-500/50 [color-scheme:dark]"
-            />
+            <DatePicker value={dateISO} onChange={setDateISO} />
           </div>
 
           {/* Author filter */}
