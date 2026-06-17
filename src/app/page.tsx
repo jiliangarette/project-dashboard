@@ -3,13 +3,10 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { GitHubRepo, GitHubRateLimit } from "@/lib/github";
 import { ProjectCard } from "@/components/ProjectCard";
-import { Search, Star, WifiOff, Clock, CheckSquare, Pin, X, Download } from "lucide-react";
+import { Search, Star, WifiOff, Clock, CheckSquare, Pin, X } from "lucide-react";
 import { clsx } from "clsx";
 import { toast } from "@/components/Toast";
-import { exportReposAsCSV, exportReposAsJSON } from "@/lib/export";
-import { MobileOptimizedFilters } from "@/components/MobileOptimizedFilters";
 import { DashboardLoadingSkeleton } from "@/components/ProjectCardSkeleton";
-import { loadRepoTags, getAllUniqueTags, type RepoTags } from "@/lib/tags";
 import { fetchAliases, saveAlias, type RepoAliases } from "@/lib/aliases";
 
 export default function DashboardPage() {
@@ -21,14 +18,9 @@ export default function DashboardPage() {
   const [isOffline, setIsOffline] = useState(false);
   const [rateLimit, setRateLimit] = useState<GitHubRateLimit | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [languageFilter, setLanguageFilter] = useState<string>("");
-  const [sortBy, setSortBy] = useState<"updated" | "stars" | "name" | "issues">("updated");
-  const [activityFilter, setActivityFilter] = useState<"7d" | "30d" | "all">("30d");
   const [pinnedRepos, setPinnedRepos] = useState<Set<number>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedRepos, setSelectedRepos] = useState<Set<number>>(new Set());
-  const [repoTags, setRepoTags] = useState<RepoTags>({});
-  const [tagFilter, setTagFilter] = useState<string>("");
   const [repoAliases, setRepoAliases] = useState<RepoAliases>({});
   const [pinnedLoaded, setPinnedLoaded] = useState(false);
 
@@ -82,11 +74,6 @@ export default function DashboardPage() {
         console.error("Failed to parse pinned repos:", e);
       }
     }
-  }, []);
-
-  // Load tags from localStorage
-  useEffect(() => {
-    setRepoTags(loadRepoTags());
   }, []);
 
   // Load aliases from server
@@ -145,29 +132,9 @@ export default function DashboardPage() {
     loadRepos();
   }, []);
 
-  // Get unique languages
-  const languages = useMemo(() => {
-    const langs = new Set<string>();
-    repos.forEach((repo) => {
-      if (repo.language) langs.add(repo.language);
-    });
-    return Array.from(langs).sort();
-  }, [repos]);
-
-  // Get all unique tags for filter dropdown
-  const allTags = useMemo(() => getAllUniqueTags(), [repoTags]);
-
-  // Filter and sort repos
+  // Filter by search and sort by most recently updated
   const filteredRepos = useMemo(() => {
     let filtered = repos;
-
-    // Activity filter
-    if (activityFilter !== "all") {
-      const days = activityFilter === "7d" ? 7 : 30;
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - days);
-      filtered = filtered.filter((repo) => new Date(repo.updated_at) > cutoff);
-    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -178,35 +145,10 @@ export default function DashboardPage() {
       );
     }
 
-    if (languageFilter) {
-      filtered = filtered.filter((repo) => repo.language === languageFilter);
-    }
-
-    // Tag filter
-    if (tagFilter) {
-      filtered = filtered.filter((repo) => {
-        const tags = repoTags[repo.id] || [];
-        return tags.includes(tagFilter);
-      });
-    }
-
-    filtered = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case "updated":
-          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-        case "stars":
-          return b.stargazers_count - a.stargazers_count;
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "issues":
-          return b.open_issues_count - a.open_issues_count;
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [repos, searchQuery, languageFilter, sortBy, activityFilter, tagFilter, repoTags, repoAliases]);
+    return [...filtered].sort(
+      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+  }, [repos, searchQuery, repoAliases]);
 
   // Separate pinned and unpinned
   const pinnedReposList = filteredRepos.filter((repo) => pinnedRepos.has(repo.id));
@@ -275,10 +217,6 @@ export default function DashboardPage() {
     });
     toast("info", `${selectedRepos.size} repositories unpinned`);
     clearSelection();
-  };
-
-  const handleTagsChange = () => {
-    setRepoTags(loadRepoTags());
   };
 
   const handleAliasChange = async (repoId: number, alias: string) => {
@@ -380,23 +318,8 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Filters: Mobile-optimized collapsible on small screens, inline on desktop */}
-        <MobileOptimizedFilters
-          languageFilter={languageFilter}
-          setLanguageFilter={setLanguageFilter}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          activityFilter={activityFilter}
-          setActivityFilter={setActivityFilter}
-          languages={languages}
-          tagFilter={tagFilter}
-          setTagFilter={setTagFilter}
-          tags={allTags}
-        />
-
         {/* Action buttons */}
         <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-
           <button
             onClick={() => {
               setIsSelectionMode(!isSelectionMode);
@@ -413,36 +336,6 @@ export default function DashboardPage() {
             <CheckSquare className="w-4 h-4" />
             <span className="hidden sm:inline">Select</span>
           </button>
-
-          <div className="relative group">
-            <button
-              className="px-3 sm:px-4 py-2.5 rounded-lg border border-card-border bg-card-bg text-foreground hover:bg-foreground/5 transition-colors min-h-[44px] text-sm flex items-center gap-2"
-              title="Export repositories"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export</span>
-            </button>
-            <div className="absolute right-0 top-full mt-1 w-36 bg-card-bg border border-card-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-              <button
-                onClick={() => {
-                  exportReposAsCSV(filteredRepos);
-                  toast("success", "Exported as CSV");
-                }}
-                className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-foreground/5 transition-colors rounded-t-lg"
-              >
-                Export as CSV
-              </button>
-              <button
-                onClick={() => {
-                  exportReposAsJSON(filteredRepos);
-                  toast("success", "Exported as JSON");
-                }}
-                className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-foreground/5 transition-colors rounded-b-lg"
-              >
-                Export as JSON
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 

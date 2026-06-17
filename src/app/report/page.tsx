@@ -23,6 +23,27 @@ interface ProjectReport {
   error?: string;
 }
 
+/* ─── Date helpers ──────────────────────────────────────────────────── */
+
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const formatDateLabel = (iso: string) =>
+  new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+const todayISO = () => toISODate(new Date());
+
+const yesterdayISO = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return toISODate(d);
+};
+
 /* ─── Multi-select combobox ─────────────────────────────────────────── */
 
 function ProjectSelector({
@@ -221,22 +242,15 @@ function ReportCard({ report, index }: { report: ProjectReport; index: number })
 
 /* ─── Copy All button ───────────────────────────────────────────────── */
 
-function CopyAllButton({ reports }: { reports: ProjectReport[] }) {
+function CopyAllButton({ reports, dateISO }: { reports: ProjectReport[]; dateISO: string }) {
   const [copied, setCopied] = useState(false);
-  const doneReports = reports.filter((r) => r.status === "done" && r.summary !== "No commits found today.");
+  const doneReports = reports.filter((r) => r.status === "done" && !r.summary.startsWith("No commits"));
 
   if (doneReports.length === 0) return null;
 
   const handleCopyAll = () => {
-    const todayStr = new Date().toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
     const lines: string[] = [];
-    lines.push(`# EOD Report — ${todayStr}`);
+    lines.push(`# EOD Report — ${formatDateLabel(dateISO)}`);
     lines.push("");
 
     for (const r of doneReports) {
@@ -288,6 +302,7 @@ export default function ReportPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(true);
   const [authorFilter, setAuthorFilter] = useState<"me" | "all">("me");
+  const [dateISO, setDateISO] = useState<string>(todayISO);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -378,53 +393,47 @@ export default function ReportPage() {
           continue;
         }
 
-        // Filter to today's commits only (EOD report)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        let todayCommits = commits.filter(
-          (c: { commit: { author: { date: string } } }) =>
-            new Date(c.commit.author.date) >= today
-        );
+        // Filter to the selected day's commits only
+        const dayStart = new Date(dateISO + "T00:00:00");
+        const dayEnd = new Date(dayStart);
+        dayEnd.setDate(dayEnd.getDate() + 1);
+        let dayCommits = commits.filter((c: { commit: { author: { date: string } } }) => {
+          const d = new Date(c.commit.author.date);
+          return d >= dayStart && d < dayEnd;
+        });
 
         // Filter by author if "Only me" is selected
         if (authorFilter === "me" && session?.githubUsername) {
           const username = session.githubUsername.toLowerCase();
-          todayCommits = todayCommits.filter(
+          dayCommits = dayCommits.filter(
             (c: { author?: { login?: string }; commit: { author: { name?: string } } }) =>
               c.author?.login?.toLowerCase() === username ||
               c.commit.author.name?.toLowerCase() === session?.user?.name?.toLowerCase()
           );
         }
 
-        if (todayCommits.length === 0) {
+        if (dayCommits.length === 0) {
           setReports((prev) =>
             prev.map((r, idx) =>
-              idx === i ? { ...r, status: "done", summary: authorFilter === "me" ? "No commits by you today." : "No commits found today.", bullets: [] } : r
+              idx === i ? { ...r, status: "done", summary: authorFilter === "me" ? "No commits by you on this day." : "No commits found on this day.", bullets: [] } : r
             )
           );
           continue;
         }
 
-        const commitPayload = todayCommits.map(
+        const commitPayload = dayCommits.map(
           (c: { commit: { message: string; author: { name: string } } }) => ({
             message: c.commit.message,
             author: c.commit.author.name,
           })
         );
 
-        const todayStr = new Date().toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-
         // Generate
         const genRes = await fetch("/api/changelog/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            date: todayStr,
+            date: formatDateLabel(dateISO),
             commits: commitPayload,
             provider,
             model,
@@ -482,7 +491,7 @@ export default function ReportPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">EOD Report</h1>
-          <p className="text-muted-fg text-sm">Select projects and generate today&apos;s end-of-day report.</p>
+          <p className="text-muted-fg text-sm">Select projects and generate the report for {formatDateLabel(dateISO)}.</p>
         </div>
 
         {/* Selector + Generate */}
@@ -493,6 +502,40 @@ export default function ReportPage() {
             onToggle={toggleProject}
             aliases={aliases}
           />
+
+          {/* Date filter */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-zinc-400">Date:</span>
+            <div className="inline-flex rounded-lg border border-white/[0.08] overflow-hidden">
+              <button
+                onClick={() => setDateISO(todayISO())}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors border-r ${
+                  dateISO === todayISO()
+                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"
+                    : "text-zinc-400 hover:bg-white/[0.04] border-white/[0.08]"
+                }`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setDateISO(yesterdayISO())}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                  dateISO === yesterdayISO()
+                    ? "bg-indigo-500/20 text-indigo-300"
+                    : "text-zinc-400 hover:bg-white/[0.04]"
+                }`}
+              >
+                Yesterday
+              </button>
+            </div>
+            <input
+              type="date"
+              value={dateISO}
+              max={todayISO()}
+              onChange={(e) => e.target.value && setDateISO(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-zinc-300 outline-none transition-colors hover:border-white/[0.12] focus:border-indigo-500/50 [color-scheme:dark]"
+            />
+          </div>
 
           {/* Author filter */}
           <div className="flex items-center gap-2">
@@ -555,7 +598,7 @@ export default function ReportPage() {
               </span>
             </button>
 
-            <CopyAllButton reports={reports} />
+            <CopyAllButton reports={reports} dateISO={dateISO} />
           </div>
         </div>
 
