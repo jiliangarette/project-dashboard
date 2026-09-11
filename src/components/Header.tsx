@@ -55,6 +55,12 @@ export function Header() {
           >
             Report
           </Link>
+          <a
+            href="/eod"
+            className="px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center text-muted-fg hover:text-foreground"
+          >
+            Calendar
+          </a>
           <Link
             href="/settings"
             className={clsx(
@@ -140,6 +146,13 @@ export function Header() {
           >
             Report
           </Link>
+          <a
+            href="/eod"
+            onClick={() => setMobileOpen(false)}
+            className="block px-3 py-3 rounded-lg transition-colors min-h-[44px] text-muted-fg hover:text-foreground"
+          >
+            Calendar
+          </a>
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}

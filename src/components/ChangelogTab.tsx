@@ -12,6 +12,7 @@ import {
   type DayCommits,
   type GeneratedChangelog,
 } from "@/lib/changelog";
+import { generateChangelog, providerModel, readAiSettings, OFFLINE_MESSAGE } from "@/lib/ai";
 
 type ViewMode = "daily" | "weekly" | "monthly";
 
@@ -19,28 +20,6 @@ interface ChangelogTabProps {
   owner: string;
   repo: string;
   displayName?: string;
-}
-
-function getProviderSettings() {
-  let provider = "openai";
-  let model = "gpt-4.1-nano";
-
-  try {
-    const stored = localStorage.getItem("changelog-settings");
-    if (stored) {
-      const settings = JSON.parse(stored);
-      provider = settings.aiProvider || "openai";
-      if (provider === "openrouter") {
-        model = settings.openrouterModel || "liquid/lfm-2.5-1.2b-instruct:free";
-      } else if (provider === "openai") {
-        model = settings.openaiModel || "gpt-4.1-nano";
-      } else if (provider === "anthropic") {
-        model = settings.anthropicModel || "claude-sonnet-4-5";
-      }
-    }
-  } catch {}
-
-  return { provider, model };
 }
 
 /** Filter day groups by author — returns new DayCommits[] with only that author's commits */
@@ -440,40 +419,31 @@ export function ChangelogTab({ owner, repo, displayName }: ChangelogTabProps) {
   }, [authorFilter, owner, repo]);
 
   const callGenerate = async (cacheKey: string, commits: DayCommits["commits"], dateLabel: string) => {
-    if (commits.length === 0) return;
+    if (commits.length === 0) return true;
 
     setGenerating((prev) => new Set(prev).add(cacheKey));
     setFailedKeys((prev) => { const n = new Set(prev); n.delete(cacheKey); return n; });
 
     try {
-      const { provider, model } = getProviderSettings();
+      const { provider, model } = providerModel(readAiSettings());
 
-      const response = await fetch("/api/changelog/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          date: dateLabel,
-          commits: commits.map((c) => ({ message: c.message, author: c.author })),
-          provider,
-          model,
-        }),
+      const generated: GeneratedChangelog = await generateChangelog({
+        date: dateLabel,
+        commits: commits.map((c) => ({ message: c.message, author: c.author })),
+        provider,
+        model,
       });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(data.error || "Failed to generate");
-      }
-
-      const generated: GeneratedChangelog = await response.json();
       setCachedChangelog(owner, repo, cacheKey, generated);
       setChangelogs((prev) => { const n = new Map(prev); n.set(cacheKey, generated); return n; });
     } catch (err) {
       console.error(`Failed to generate changelog (${cacheKey}):`, err);
       setFailedKeys((prev) => new Set(prev).add(cacheKey));
       toast("error", `Failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      return !(err instanceof Error && err.message === OFFLINE_MESSAGE);
     } finally {
       setGenerating((prev) => { const n = new Set(prev); n.delete(cacheKey); return n; });
     }
+    return true;
   };
 
   const dayCacheKey = (date: string) => `${date}${authorSuffix}`;
@@ -481,7 +451,7 @@ export function ChangelogTab({ owner, repo, displayName }: ChangelogTabProps) {
   const generateAll = async () => {
     const uncached = dayGroups.filter((day) => !changelogs.has(dayCacheKey(day.date)));
     for (const day of uncached) {
-      await callGenerate(dayCacheKey(day.date), day.commits, day.date);
+      if (!(await callGenerate(dayCacheKey(day.date), day.commits, day.date))) break;
     }
     const successCount = uncached.filter((d) => !failedKeys.has(dayCacheKey(d.date))).length;
     if (successCount > 0) toast("success", `Generated ${successCount} changelogs`);

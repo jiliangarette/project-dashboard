@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { fetchAliases } from "@/lib/aliases";
+import { generateChangelog, providerModel, readAiSettings, OFFLINE_MESSAGE } from "@/lib/ai";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
 
@@ -478,21 +479,6 @@ export default function ReportPage() {
     });
   };
 
-  // Read provider settings from localStorage (same as ChangelogTab)
-  const getProviderSettings = () => {
-    let provider = "openai";
-    let model = "gpt-4.1-nano";
-    try {
-      const stored = localStorage.getItem("changelog-settings");
-      if (stored) {
-        const s = JSON.parse(stored);
-        if (s.provider) provider = s.provider;
-        if (s.model) model = s.model;
-      }
-    } catch { /* noop */ }
-    return { provider, model };
-  };
-
   const handleGenerate = async () => {
     if (selected.size === 0) return;
     setIsGenerating(true);
@@ -508,7 +494,7 @@ export default function ReportPage() {
     }));
     setReports(initial);
 
-    const { provider, model } = getProviderSettings();
+    const { provider, model } = providerModel(readAiSettings());
 
     // Generate sequentially to avoid rate limits
     for (let i = 0; i < selectedRepos.length; i++) {
@@ -571,34 +557,26 @@ export default function ReportPage() {
         );
 
         // Generate
-        const genRes = await fetch("/api/changelog/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            date: formatDateLabel(dateISO),
-            commits: commitPayload,
-            provider,
-            model,
-          }),
+        const result = await generateChangelog({
+          date: formatDateLabel(dateISO),
+          commits: commitPayload,
+          provider,
+          model,
         });
-
-        if (!genRes.ok) {
-          const err = await genRes.json().catch(() => ({}));
-          throw new Error(err.error || "Generation failed");
-        }
-
-        const result = await genRes.json();
         setReports((prev) =>
           prev.map((r, idx) =>
             idx === i ? { ...r, status: "done", summary: result.summary, bullets: result.bullets } : r
           )
         );
       } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        const offline = message === OFFLINE_MESSAGE;
         setReports((prev) =>
           prev.map((r, idx) =>
-            idx === i ? { ...r, status: "error", error: error instanceof Error ? error.message : "Unknown error" } : r
+            idx === i || (offline && idx > i) ? { ...r, status: "error", error: message } : r
           )
         );
+        if (offline) break;
       }
     }
 

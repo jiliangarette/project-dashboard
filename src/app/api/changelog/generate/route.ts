@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { relayFetch, requireOwner, RELAY_OFFLINE, type RelayJson } from "@/lib/relay";
+
+export const maxDuration = 60;
 
 interface CommitData {
   message: string;
@@ -8,9 +11,33 @@ interface CommitData {
 interface GenerateRequest {
   date: string;
   commits: CommitData[];
-  provider?: "openrouter" | "openai" | "anthropic";
+  provider?: "local" | "openrouter" | "openai" | "anthropic";
   model?: string;
 }
+
+const JOB_GONE = "That job is gone. Jarvis may have restarted. Generate again.";
+
+const jobResponse = (status: number, job: RelayJson) => {
+  if (job.status === "done") {
+    return NextResponse.json({ date: job.date, summary: job.summary, bullets: job.bullets });
+  }
+  if (job.status === "running") {
+    return NextResponse.json({ pending: true, job: job.id }, { status: 202 });
+  }
+  if (job.status === "error") {
+    return NextResponse.json({ error: job.error }, { status: 500 });
+  }
+  if (status === 401) {
+    return NextResponse.json(
+      { error: "Jarvis rejected the request signature. Check JARVIS_RELAY_SECRET." },
+      { status: 502 }
+    );
+  }
+  return NextResponse.json(
+    { error: typeof job.error === "string" ? job.error : "Jarvis sent an unexpected answer" },
+    { status: status >= 400 ? status : 502 }
+  );
+};
 
 const SYSTEM_PROMPT = `You rewrite technical git commit messages into a concise, plain English changelog.
 
@@ -43,9 +70,12 @@ BAD bullets (never produce):
 - "Updated index.ts and fixed the onClick handler in Button.tsx" (file names)`;
 
 export async function POST(request: Request) {
+  const gate = await requireOwner();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const body: GenerateRequest = await request.json();
-    const { date, commits, provider = "openrouter", model } = body;
+    const { date, commits, provider = "local", model } = body;
 
     if (!commits || commits.length === 0) {
       return NextResponse.json(
@@ -81,6 +111,26 @@ Commits:
 ${commitList}
 
 Rewrite these commits into a daily changelog following the rules. Output JSON only.`;
+
+    if (provider === "local") {
+      const result = await relayFetch(
+        gate.session.accessToken,
+        "POST",
+        "/v1/changelog?wait=45",
+        {
+          date,
+          commits: uniqueCommits.slice(0, 500).map((c) => ({
+            message: c.message.split("\n")[0].trim(),
+            author: c.author,
+          })),
+        },
+        { timeoutMs: 55000 }
+      ).catch(() => null);
+      if (!result) {
+        return NextResponse.json({ error: RELAY_OFFLINE }, { status: 503 });
+      }
+      return jobResponse(result.status, result.json);
+    }
 
     let response: Response;
     let content: string;
@@ -273,4 +323,29 @@ Rewrite these commits into a daily changelog following the rules. Output JSON on
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: Request) {
+  const gate = await requireOwner();
+  if (gate instanceof NextResponse) return gate;
+
+  const job = new URL(request.url).searchParams.get("job");
+  if (!job) {
+    return NextResponse.json({ error: "Missing job id" }, { status: 400 });
+  }
+
+  const result = await relayFetch(
+    gate.session.accessToken,
+    "GET",
+    `/v1/jobs/${encodeURIComponent(job)}?wait=25`,
+    undefined,
+    { timeoutMs: 40000 }
+  ).catch(() => null);
+  if (!result) {
+    return NextResponse.json({ error: RELAY_OFFLINE }, { status: 503 });
+  }
+  if (result.status === 404) {
+    return NextResponse.json({ error: JOB_GONE }, { status: 404 });
+  }
+  return jobResponse(result.status, result.json);
 }

@@ -1,42 +1,51 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "@/components/Toast";
-
-interface Settings {
-  aiProvider: "openrouter" | "openai" | "anthropic";
-  openrouterModel: string;
-  openaiModel: string;
-  anthropicModel: string;
-}
-
-const DEFAULT_SETTINGS: Settings = {
-  aiProvider: "openai",
-  openrouterModel: "liquid/lfm-2.5-1.2b-instruct:free",
-  openaiModel: "gpt-4.1-nano",
-  anthropicModel: "claude-sonnet-4-5",
-};
+import {
+  DEFAULT_AI_SETTINGS,
+  readAiSettings,
+  writeAiSettings,
+  type AiProvider,
+  type AiSettings,
+} from "@/lib/ai";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<AiSettings>(DEFAULT_AI_SETTINGS);
   const [saved, setSaved] = useState(false);
+  const [relayStatus, setRelayStatus] = useState<{ online: boolean; text: string } | null>(null);
+  const [checkingRelay, setCheckingRelay] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("changelog-settings");
-    if (stored) {
-      try {
-        setSettings(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse settings:", e);
-      }
+    setSettings(readAiSettings());
+  }, []);
+
+  const checkRelay = useCallback(async () => {
+    setCheckingRelay(true);
+    try {
+      const res = await fetch("/api/relay/status", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      setRelayStatus(
+        data.online
+          ? { online: true, text: "Online" }
+          : { online: false, text: data.error || "Could not check Jarvis. Try again." }
+      );
+    } catch {
+      setRelayStatus({ online: false, text: "Could not check Jarvis. Try again." });
+    } finally {
+      setCheckingRelay(false);
     }
   }, []);
 
+  useEffect(() => {
+    if (settings.aiProvider === "local") checkRelay();
+  }, [settings.aiProvider, checkRelay]);
+
   const handleSave = () => {
-    localStorage.setItem("changelog-settings", JSON.stringify(settings));
+    writeAiSettings(settings);
     setSaved(true);
     toast("success", "Settings saved");
     setTimeout(() => setSaved(false), 2000);
@@ -90,15 +99,47 @@ export default function SettingsPage() {
               <select
                 value={settings.aiProvider}
                 onChange={(e) =>
-                  setSettings({ ...settings, aiProvider: e.target.value as Settings["aiProvider"] })
+                  setSettings({ ...settings, aiProvider: e.target.value as AiProvider })
                 }
                 className="w-full px-4 py-2.5 rounded-lg border border-card-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
               >
+                <option value="local">Jarvis (Claude Code on your laptop)</option>
                 <option value="openrouter">OpenRouter (FREE models available)</option>
                 <option value="openai">OpenAI</option>
                 <option value="anthropic">Anthropic (Claude)</option>
               </select>
             </div>
+
+            {settings.aiProvider === "local" && (
+              <div className="flex flex-wrap items-center gap-3">
+                <span
+                  role="status"
+                  aria-live="polite"
+                  className={`inline-flex items-center gap-2 text-sm ${
+                    relayStatus?.online && !checkingRelay ? "text-green-400" : "text-muted-fg"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      checkingRelay || !relayStatus
+                        ? "bg-muted-fg"
+                        : relayStatus.online
+                          ? "bg-green-400"
+                          : "bg-red-400"
+                    }`}
+                  />
+                  {checkingRelay || !relayStatus ? "Checking Jarvis..." : relayStatus.text}
+                </span>
+                <button
+                  type="button"
+                  onClick={checkRelay}
+                  disabled={checkingRelay}
+                  className="px-4 py-2 rounded-lg border border-card-border hover:bg-foreground/5 text-foreground text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                >
+                  Check again
+                </button>
+              </div>
+            )}
 
             {settings.aiProvider === "openrouter" && (
               <div>
@@ -206,6 +247,9 @@ export default function SettingsPage() {
             API Keys Required
           </h2>
           <div className="space-y-2 text-sm text-muted-fg">
+            <p>
+              <strong>Jarvis:</strong> Needs no key. It runs Claude Code on your laptop.
+            </p>
             <p>
               <strong>OpenRouter:</strong> Add OPENROUTER_API_KEY to your .env file
             </p>
