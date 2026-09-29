@@ -13,7 +13,7 @@ const DEFAULT_TIMEOUT_MS = 20000;
 const LOOKUP_TIMEOUT_MS = 8000;
 const PROBE_TIMEOUT_MS = 5000;
 const PROBE_TTL_MS = 15000;
-const RELAY_HOST = /^https:\/\/[a-z0-9-]+\.lhr\.life$/;
+const RELAY_HOST = /^https:\/\/[a-z0-9-]+\.(lhr\.life|trycloudflare\.com)$/;
 
 export type RelayJson = Record<string, unknown>;
 export type OwnerSession = Session & { accessToken: string };
